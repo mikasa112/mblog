@@ -1,7 +1,14 @@
 use serde::{Deserialize, Serialize};
 use std::error::Error;
+use std::sync::LazyLock;
+
 pub mod app;
-use app::database::{make_db_pool, DB_POOL};
+pub mod api;
+pub mod model;
+pub static BLOG_CONFIG: LazyLock<MyBlogConfig> = LazyLock::new(|| {
+    let config: MyBlogConfig = serde_yml::from_str(include_str!("D:/code/mblog/mblog.yaml")).unwrap();
+    config
+});
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MyBlogConfig {
@@ -16,11 +23,4 @@ pub struct Database {
 pub struct Application {
     pub host: String,
     pub port: usize,
-}
-
-pub async fn init_config() -> Result<MyBlogConfig, Box<dyn Error>> {
-    let config: MyBlogConfig = serde_yml::from_str(include_str!("D:/code/mblog/mblog.yaml"))?;
-    let pool = make_db_pool(config.database.url.as_str()).await?;
-    DB_POOL.set(pool).unwrap();
-    Ok(config)
 }
