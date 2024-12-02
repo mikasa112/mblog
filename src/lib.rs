@@ -1,8 +1,7 @@
-use std::error::Error;
 use serde::{Deserialize, Serialize};
-use crate::database::{make_db_pool, DB_POOL};
-
-pub mod database;
+use std::error::Error;
+pub mod app;
+use app::database::{make_db_pool, DB_POOL};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MyBlogConfig {

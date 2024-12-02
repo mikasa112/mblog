@@ -3,4 +3,4 @@ application:
   port: 9091
 
 database:
-  url: 'D:/code/mblog/mblog.db'
+  url: "mysql://root:mikasa520.@122.51.163.61/d_blog"
