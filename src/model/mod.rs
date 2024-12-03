@@ -1,7 +1,3 @@
 pub mod posts;
 
-type ModelError = Box<dyn std::error::Error>;
-
-pub trait PageOffset {
-
-}
+type SQLError = Box<dyn std::error::Error>;

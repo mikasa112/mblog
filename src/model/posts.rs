@@ -1,7 +1,7 @@
 use sqlx::{query_as, FromRow};
 use sqlx::types::chrono::NaiveDateTime;
 use crate::app::database::{db_pool};
-use crate::model::ModelError;
+use crate::model::SQLError;
 
 #[derive(Debug, FromRow)]
 pub struct Posts {
@@ -12,7 +12,7 @@ pub struct Posts {
 }
 
 impl Posts {
-    pub async fn query_posts_list(limit: i32, offset: i32) -> Result<Vec<Posts>, ModelError> {
+    pub async fn query_posts_list(limit: i32, offset: i32) -> Result<Vec<Posts>, SQLError> {
         let result: Vec<Posts> = query_as!(Posts,
         r#"
         SELECT tp.id, tp.content ,tp.created_at,tp.updated_at FROM t_posts tp ORDER BY tp.updated_at DESC LIMIT ? OFFSET ?;
@@ -20,7 +20,7 @@ impl Posts {
         Ok(result)
     }
 
-    pub async fn query_posts_by_id(id: u32) -> Result<Posts, ModelError> {
+    pub async fn query_posts_by_id(id: u32) -> Result<Posts, SQLError> {
         let result = query_as!(Posts,
             r#"
         SELECT tp.id, tp.content,tp.created_at,tp.updated_at FROM  t_posts tp WHERE tp.id = ?;
