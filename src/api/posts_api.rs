@@ -1,5 +1,5 @@
 use salvo::{handler, Request, Response};
-use salvo::prelude::Json;
+use salvo::prelude::{Json, StatusCode};
 use serde::Serialize;
 use crate::app::response::{ListResponse, ObjectResponse};
 use crate::model;
@@ -15,7 +15,10 @@ struct Posts {
 
 #[handler]
 pub async fn list_posts(req: &mut Request, res: &mut Response) {
-    let list = model::posts::Posts::query_posts_list(10, 0).await.unwrap();
+    let page = req.query::<u32>("page").unwrap_or(1);
+    let size = req.query::<u32>("size").unwrap_or(10);
+    let list = model::posts::Posts::query_posts_list(size, (page - 1) * size).await?;
+    let total = model::posts::Posts::query_posts_count().await.unwrap();
     let list = list.into_iter().map(|it| {
         Posts {
             id: it.id,
@@ -28,7 +31,7 @@ pub async fn list_posts(req: &mut Request, res: &mut Response) {
         err_msg: None,
         status: 0,
         data: &list,
-        total: Some(list.len()),
+        total: Some(total as usize),
     }));
 }
 
