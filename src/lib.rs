@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use std::error::Error;
 use std::sync::LazyLock;
 
 pub mod app;

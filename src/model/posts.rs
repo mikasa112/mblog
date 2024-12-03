@@ -1,7 +1,6 @@
-use serde_yml::modules::error::Pos;
 use sqlx::{query_as, FromRow};
 use sqlx::types::chrono::NaiveDateTime;
-use crate::app::database::{db_pool, DB_POOL};
+use crate::app::database::{db_pool};
 use crate::model::ModelError;
 
 #[derive(Debug, FromRow)]
@@ -24,26 +23,24 @@ impl Posts {
     pub async fn query_posts_by_id(id: u32) -> Result<Posts, ModelError> {
         let result = query_as!(Posts,
             r#"
-        SELECT tp.id, tp.content ,tp.created_at,tp.updated_at from t_posts tp;
-        "#).fetch_one(db_pool()).await?;
+        SELECT tp.id, tp.content,tp.created_at,tp.updated_at FROM  t_posts tp WHERE tp.id = ?;
+        "#,id).fetch_one(db_pool()).await?;
         Ok(result)
     }
 }
+#[cfg(test)]
 mod posts_test {
-    use crate::app::database::init_db;
     use super::*;
 
     #[tokio::test]
     async fn query_posts_by_id() {
-        init_db().await;
-        let a = Posts::query_posts_by_id(1).await.unwrap();
-        println!("{:?}", a);
+        let a = Posts::query_posts_by_id(2).await.unwrap();
+        assert_eq!(a.content, "测试测试测试")
     }
 
     #[tokio::test]
     async fn test_query_posts_list() {
-        init_db().await;
-        let a = Posts::query_posts_list(10, 0).await.unwrap();
-        println!("{:?}", a);
+        let posts = Posts::query_posts_list(10, 0).await.unwrap();
+        assert!(posts.len() <= 10);
     }
 }
