@@ -1,6 +1,6 @@
 use salvo::prelude::*;
-use mblog::api::root_router;
-use mblog::BLOG_CONFIG;
+use mblog::app::api::root_router;
+use mblog::internal::core::config::BLOG_CONFIG;
 
 #[tokio::main]
 async fn main() {
