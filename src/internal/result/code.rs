@@ -1,19 +1,19 @@
 use salvo::{async_trait, Depot, Request, Response, Writer};
 use salvo::prelude::Json;
-use thiserror::Error;
-use sqlx::Error;
 use crate::internal::result::response::ObjResponse;
 
-#[derive(Error, Debug)]
+#[derive(thiserror::Error, Debug)]
 pub enum Code {
     #[error("{1}: {0}")]
     New(i32, String),
     #[error("内部服务器错误: {source}")]
     InternalServerError {
         #[from]
-        source: Error,
+        source: sqlx::Error,
     },
+
 }
+
 
 #[async_trait]
 impl Writer for Code {

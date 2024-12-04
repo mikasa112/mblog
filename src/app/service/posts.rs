@@ -30,7 +30,7 @@ pub async fn list(page: u32, size: u32) -> ApiResult<ListResponse<Posts>> {
     })
 }
 
-pub async  fn one_of_id(id:u32) ->ApiResult<ObjResponse<Posts>>{
+pub async fn one_of_id(id: u32) -> ApiResult<ObjResponse<Posts>> {
     let it = model::posts::Posts::query_posts_by_id(id).await?;
     let it = Posts {
         id: it.id,
