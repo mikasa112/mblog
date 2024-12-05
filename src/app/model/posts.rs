@@ -25,8 +25,8 @@ pub enum Status {
 
 
 // 避免孤儿规则
-#[derive(Debug)]
 #[warn(dead_code)]
+#[derive(Debug)]
 pub struct MStatus(Option<Status>);
 impl From<Option<String>> for MStatus {
     fn from(value: Option<String>) -> Self {

@@ -1,7 +1,5 @@
-use std::error::Error;
 use salvo::{async_trait, Depot, Request, Response, Writer};
 use salvo::prelude::Json;
-use tracing::info;
 use crate::internal::result::response::ObjResponse;
 
 #[derive(thiserror::Error, Debug)]
@@ -41,7 +39,7 @@ impl Writer for Code {
                 let x = validation_error
                     .field_errors()
                     .into_iter()
-                    .flat_map(|(field, errors)| {
+                    .flat_map(|(_, errors)| {
                         errors.into_iter().map(|error| {
                             format!(
                                 "{}",

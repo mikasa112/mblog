@@ -4,8 +4,8 @@ use salvo::prelude::JwtAuth;
 use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct JwtClaims {
-    username: String,
-    exp: i64,
+    pub username: String,
+    pub exp: i64,
 }
 
 #[inline]
