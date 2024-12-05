@@ -19,4 +19,5 @@ pub struct Database {
 pub struct Application {
     pub host: String,
     pub port: usize,
+    pub secret_key: String,
 }

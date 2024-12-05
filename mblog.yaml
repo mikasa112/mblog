@@ -1,6 +1,7 @@
 application:
   host: '0.0.0.0'
   port: 9091
+  secret_key: 'asdkf44as223'
 
 database:
   url: "mysql://root:mikasa520.@122.51.163.61/d_blog"

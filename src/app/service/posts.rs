@@ -1,8 +1,10 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use crate::app::model;
 
 use crate::internal::result::ApiResult;
 use crate::internal::result::response::{ListResponse, ObjResponse};
+
+use validator::Validate;
 
 #[derive(Debug, Serialize)]
 pub struct Posts {
@@ -31,7 +33,6 @@ impl From<model::posts::PostCategory> for Posts {
     }
 }
 
-
 pub async fn list(page: u32, size: u32) -> ApiResult<ListResponse<Posts>> {
     let list = model::posts::PostCategory::query_posts_list(size, (page - 1) * size).await?;
     let total = model::posts::Post::query_posts_count().await?;
@@ -52,5 +53,23 @@ pub async fn one_of_id(id: u32) -> ApiResult<ObjResponse<Posts>> {
         err_msg: None,
         status: 0,
         data: Some(it.into()),
+    })
+}
+
+#[derive(Debug, Serialize, Deserialize, Validate)]
+pub struct PostParams {
+    #[validate(length(min = 1, message = "title不能为空"))]
+    pub title: String,
+    pub category_id: Option<u32>,
+    #[validate(length(min = 1, message = "content不能为空"))]
+    pub content: String,
+    pub excerpt: Option<String>,
+}
+
+pub async fn create_post(params: PostParams) -> ApiResult<ObjResponse<()>> {
+    Ok(ObjResponse {
+        err_msg: None,
+        status: 0,
+        data: None,
     })
 }

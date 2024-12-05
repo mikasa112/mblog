@@ -43,8 +43,6 @@ impl Category {
 
 
 mod test {
-    use crate::app::model::category::Category;
-
     // #[tokio::test]
     // async fn test_create() {
     //     Categories::create(String::from("算法"), Some(String::from("算法学习"))).await.unwrap();

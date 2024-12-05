@@ -1,6 +1,5 @@
 use sqlx::{FromRow, Type};
 use sqlx::types::chrono::NaiveDateTime;
-use crate::app::model::category::Category;
 use crate::internal::core::database::db_pool;
 
 #[derive(FromRow, Debug)]
@@ -27,6 +26,7 @@ pub enum Status {
 
 // 避免孤儿规则
 #[derive(Debug)]
+#[warn(dead_code)]
 pub struct MStatus(Option<Status>);
 impl From<Option<String>> for MStatus {
     fn from(value: Option<String>) -> Self {
