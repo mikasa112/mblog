@@ -1,3 +1,4 @@
+use std::error::Error;
 use salvo::{async_trait, Depot, Request, Response, Writer};
 use salvo::prelude::Json;
 use tracing::info;
@@ -37,13 +38,19 @@ impl Writer for Code {
                 (10001, Some(source.to_string()))
             }
             Code::ValidationError { validation_error } => {
-                // let detailed_msg = format!(
-                //     "参数校验失败: 字段 `{}` 的错误是 `{}`",
-                //     validation_error.code,
-                //     validation_error.message.unwrap_or_else(|| "未知错误".to_string().into())
-                // );
-                info!("{:?}",validation_error);
-                (10002, Some("ValidationError".to_string()))
+                let x = validation_error
+                    .field_errors()
+                    .into_iter()
+                    .flat_map(|(field, errors)| {
+                        errors.into_iter().map(|error| {
+                            format!(
+                                "{}",
+                                error.message.clone().unwrap_or_else(|| "未知错误".to_string().into())
+                            )
+                        })
+                    })
+                    .collect::<Vec<String>>().join("; ");
+                (10002, Some(x))
             }
         };
         res.render(Json(ObjResponse::<()> {
