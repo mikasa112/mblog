@@ -1,26 +1,42 @@
 use serde::Serialize;
 use crate::app::model;
+
 use crate::internal::result::ApiResult;
 use crate::internal::result::response::{ListResponse, ObjResponse};
 
 #[derive(Debug, Serialize)]
 pub struct Posts {
     pub id: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub category_name: Option<String>,
+    pub title: String,
     pub content: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub excerpt: Option<String>,
     pub created_at: String,
     pub updated_at: String,
 }
 
-pub async fn list(page: u32, size: u32) -> ApiResult<ListResponse<Posts>> {
-    let list = model::posts::Posts::query_posts_list(size, (page - 1) * size).await?;
-    let total = model::posts::Posts::query_posts_count().await?;
-    let list = list.into_iter().map(|it| {
+impl From<model::posts::PostCategory> for Posts {
+    fn from(it: model::posts::PostCategory) -> Self {
         Posts {
             id: it.id,
+            category_name: it.category_name,
+            title: it.title,
             content: it.content,
+            excerpt: it.excerpt,
             created_at: format!("{}", it.created_at.format("%Y-%m-%d %H:%M:%S")),
             updated_at: format!("{}", it.updated_at.format("%Y-%m-%d %H:%M:%S")),
         }
+    }
+}
+
+
+pub async fn list(page: u32, size: u32) -> ApiResult<ListResponse<Posts>> {
+    let list = model::posts::PostCategory::query_posts_list(size, (page - 1) * size).await?;
+    let total = model::posts::Post::query_posts_count().await?;
+    let list = list.into_iter().map(|it| {
+        it.into()
     }).collect::<Vec<Posts>>();
     Ok(ListResponse {
         err_msg: None,
@@ -31,16 +47,10 @@ pub async fn list(page: u32, size: u32) -> ApiResult<ListResponse<Posts>> {
 }
 
 pub async fn one_of_id(id: u32) -> ApiResult<ObjResponse<Posts>> {
-    let it = model::posts::Posts::query_posts_by_id(id).await?;
-    let it = Posts {
-        id: it.id,
-        content: it.content,
-        created_at: format!("{}", it.created_at.format("%Y-%m-%d %H:%M:%S")),
-        updated_at: format!("{}", it.updated_at.format("%Y-%m-%d %H:%M:%S")),
-    };
+    let it = model::posts::PostCategory::query_posts_by_id(id).await?;
     Ok(ObjResponse {
         err_msg: None,
         status: 0,
-        data: Some(it),
+        data: Some(it.into()),
     })
 }
