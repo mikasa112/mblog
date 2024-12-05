@@ -1,8 +1,8 @@
+use crate::app::service::account::Account;
+use crate::internal::result::response::ObjResponse;
+use crate::internal::result::ApiResult;
 use salvo::{handler, Request};
 use validator::Validate;
-use crate::app::service::account::Account;
-use crate::internal::result::ApiResult;
-use crate::internal::result::response::ObjResponse;
 
 #[handler]
 pub async fn login(req: &mut Request) -> ApiResult<ObjResponse<String>> {

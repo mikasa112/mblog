@@ -1,9 +1,9 @@
 use crate::app::service::posts::{create_post, list, one_of_id, PostParams, Posts};
+use crate::internal::result::code::Code;
 use crate::internal::result::response::{ListResponse, ObjResponse};
 use crate::internal::result::ApiResult;
 use salvo::{handler, Request};
 use validator::Validate;
-use crate::internal::result::code::Code;
 
 #[handler]
 pub async fn list_posts(req: &mut Request) -> ApiResult<ListResponse<Posts>> {
@@ -18,7 +18,12 @@ pub async fn list_posts(req: &mut Request) -> ApiResult<ListResponse<Posts>> {
 
 #[handler]
 pub async fn one_posts(req: &mut Request) -> ApiResult<ObjResponse<Posts>> {
-    let id = req.params().get("id").unwrap_or(&String::from("1")).parse::<u32>().unwrap_or(1);
+    let id = req
+        .params()
+        .get("id")
+        .unwrap_or(&String::from("1"))
+        .parse::<u32>()
+        .unwrap_or(1);
     one_of_id(id).await
 }
 

@@ -1,2 +1,2 @@
-pub mod log;
 pub mod auth;
+pub mod log;

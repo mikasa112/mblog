@@ -1,12 +1,12 @@
 use salvo::Router;
 
-pub mod posts_api;
 pub mod account_api;
+pub mod posts_api;
 
-use posts_api::{list_posts, one_posts};
 use crate::app::api::posts_api::create_posts;
-use crate::internal::middleware::auth::{auth_handler};
+use crate::internal::middleware::auth::auth_handler;
 use crate::internal::middleware::log::LogMiddleware;
+use posts_api::{list_posts, one_posts};
 
 fn open_router() -> Router {
     Router::new()
@@ -29,4 +29,3 @@ pub fn root_router() -> Router {
         .push(open_router())
         .push(auth_router())
 }
-

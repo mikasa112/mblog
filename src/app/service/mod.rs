@@ -1,2 +1,2 @@
-pub(crate) mod posts;
 pub mod account;
+pub(crate) mod posts;

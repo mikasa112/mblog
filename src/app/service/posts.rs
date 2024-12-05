@@ -1,8 +1,8 @@
-use serde::{Deserialize, Serialize};
 use crate::app::model;
+use serde::{Deserialize, Serialize};
 
-use crate::internal::result::ApiResult;
 use crate::internal::result::response::{ListResponse, ObjResponse};
+use crate::internal::result::ApiResult;
 
 use validator::Validate;
 
@@ -36,9 +36,7 @@ impl From<model::posts::PostCategory> for Posts {
 pub async fn list(page: u32, size: u32) -> ApiResult<ListResponse<Posts>> {
     let list = model::posts::PostCategory::query_posts_list(size, (page - 1) * size).await?;
     let total = model::posts::Post::query_posts_count().await?;
-    let list = list.into_iter().map(|it| {
-        it.into()
-    }).collect::<Vec<Posts>>();
+    let list = list.into_iter().map(|it| it.into()).collect::<Vec<Posts>>();
     Ok(ListResponse {
         err_msg: None,
         status: 0,

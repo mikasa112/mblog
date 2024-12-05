@@ -1,0 +1,36 @@
+use crate::internal::core::database::db_pool;
+use sqlx::types::chrono::NaiveDateTime;
+
+#[derive(sqlx::FromRow, Debug)]
+pub struct User {
+    pub id: u32,
+    pub username: String,
+    pub passw: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+}
+
+impl User {
+    pub async fn query_user(username: String) -> Result<Self, sqlx::Error> {
+        let user = sqlx::query_as!(
+            Self,
+            r#"
+        SELECT id, username, passw, created_at,updated_at FROM d_blog.t_user WHERE username = ?;
+        "#,
+            username
+        )
+        .fetch_one(db_pool())
+        .await?;
+        Ok(user)
+    }
+}
+
+mod test {
+    use crate::app::model::user::User;
+
+    #[tokio::test]
+    async fn test_query_user() {
+        let u = User::query_user(String::from("mikasa")).await.unwrap();
+        println!("{:?}", u);
+    }
+}

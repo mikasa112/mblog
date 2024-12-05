@@ -1,6 +1,6 @@
-use salvo::{async_trait, Depot, Request, Response, Writer};
-use salvo::prelude::Json;
 use crate::internal::result::response::ObjResponse;
+use salvo::prelude::Json;
+use salvo::{async_trait, Depot, Request, Response, Writer};
 
 #[derive(thiserror::Error, Debug)]
 pub enum Code {
@@ -23,18 +23,13 @@ pub enum Code {
     },
 }
 
-
 #[async_trait]
 impl Writer for Code {
     async fn write(self, _req: &mut Request, _depot: &mut Depot, res: &mut Response) {
         let (code, msg) = match self {
             Code::New(code, msg) => (code, Some(msg)),
-            Code::InternalServerError { source } => {
-                (10000, Some(source.to_string()))
-            }
-            Code::ParamsError { source } => {
-                (10001, Some(source.to_string()))
-            }
+            Code::InternalServerError { source } => (10000, Some(source.to_string())),
+            Code::ParamsError { source } => (10001, Some(source.to_string())),
             Code::ValidationError { validation_error } => {
                 let x = validation_error
                     .field_errors()
@@ -43,11 +38,15 @@ impl Writer for Code {
                         errors.into_iter().map(|error| {
                             format!(
                                 "{}",
-                                error.message.clone().unwrap_or_else(|| "未知错误".to_string().into())
+                                error
+                                    .message
+                                    .clone()
+                                    .unwrap_or_else(|| "未知错误".to_string().into())
                             )
                         })
                     })
-                    .collect::<Vec<String>>().join("; ");
+                    .collect::<Vec<String>>()
+                    .join("; ");
                 (10002, Some(x))
             }
         };

@@ -12,7 +12,13 @@ impl LogMiddleware {
 
 #[async_trait]
 impl salvo::Handler for LogMiddleware {
-    async fn handle(&self, req: &mut Request, _depot: &mut Depot, _res: &mut Response, _ctrl: &mut FlowCtrl) {
+    async fn handle(
+        &self,
+        req: &mut Request,
+        _depot: &mut Depot,
+        _res: &mut Response,
+        _ctrl: &mut FlowCtrl,
+    ) {
         let req_method = req.method().to_string();
         let req_uri = req.uri().to_string();
         info!("{} {}", req_method, req_uri);

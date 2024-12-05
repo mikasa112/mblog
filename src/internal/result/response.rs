@@ -1,5 +1,5 @@
-use salvo::{async_trait, Depot, Request, Response, Writer};
 use salvo::prelude::Json;
+use salvo::{async_trait, Depot, Request, Response, Writer};
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
@@ -46,5 +46,3 @@ where
         res.render(Json(self))
     }
 }
-
-

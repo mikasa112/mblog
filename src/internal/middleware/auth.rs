@@ -10,10 +10,9 @@ pub struct JwtClaims {
 
 #[inline]
 pub fn auth_handler() -> JwtAuth<JwtClaims, ConstDecoder> {
-    JwtAuth::new(ConstDecoder::from_secret(BLOG_CONFIG.application.secret_key.as_bytes()))
-        .finders(vec![
-            Box::new(HeaderFinder::new()),
-        ])
-        .force_passed(false)
+    JwtAuth::new(ConstDecoder::from_secret(
+        BLOG_CONFIG.application.secret_key.as_bytes(),
+    ))
+    .finders(vec![Box::new(HeaderFinder::new())])
+    .force_passed(false)
 }
-

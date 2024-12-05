@@ -1,6 +1,6 @@
-use sqlx::{FromRow, Type};
-use sqlx::types::chrono::NaiveDateTime;
 use crate::internal::core::database::db_pool;
+use sqlx::types::chrono::NaiveDateTime;
+use sqlx::{FromRow, Type};
 
 #[derive(FromRow, Debug)]
 pub struct Post {
@@ -14,7 +14,6 @@ pub struct Post {
     pub updated_at: NaiveDateTime,
 }
 
-
 #[derive(Type, Debug)]
 #[sqlx(type_name = "status")] // 数据库中自定义类型的名称
 #[sqlx(rename_all = "lowercase")] // 指定如何将枚举值映射到数据库
@@ -22,7 +21,6 @@ pub enum Status {
     Draft,
     Published,
 }
-
 
 // 避免孤儿规则
 #[warn(dead_code)]
@@ -32,13 +30,11 @@ impl From<Option<String>> for MStatus {
     fn from(value: Option<String>) -> Self {
         match value {
             None => MStatus(None),
-            Some(s) => {
-                match s.as_str() {
-                    "draft" => MStatus(Some(Status::Draft)),
-                    "published" => MStatus(Some(Status::Published)),
-                    _ => MStatus(None),
-                }
-            }
+            Some(s) => match s.as_str() {
+                "draft" => MStatus(Some(Status::Draft)),
+                "published" => MStatus(Some(Status::Published)),
+                _ => MStatus(None),
+            },
         }
     }
 }
@@ -46,8 +42,9 @@ impl From<Option<String>> for MStatus {
 impl Post {
     /// 查询文章列表
     pub async fn query_posts_list(limit: u32, offset: u32) -> Result<Vec<Post>, sqlx::Error> {
-        let result: Vec<Post> = sqlx::query_as!(Post,
-        r#"
+        let result: Vec<Post> = sqlx::query_as!(
+            Post,
+            r#"
         SELECT
         tp.id,
         tp.category_id,
@@ -60,14 +57,20 @@ impl Post {
         FROM t_posts tp
         ORDER BY tp.updated_at DESC
         LIMIT ? OFFSET ?;
-        "#,limit ,offset).fetch_all(db_pool()).await?;
+        "#,
+            limit,
+            offset
+        )
+        .fetch_all(db_pool())
+        .await?;
         Ok(result)
     }
 
     /// 从文章ID查询文章
     pub async fn query_posts_by_id(id: u32) -> Result<Post, sqlx::Error> {
-        let result = sqlx::query_as!(Post,
-        r#"
+        let result = sqlx::query_as!(
+            Post,
+            r#"
         SELECT
         tp.id,
         tp.category_id,
@@ -79,35 +82,65 @@ impl Post {
         tp.updated_at
         FROM t_posts tp
         WHERE tp.id = ?;
-        "#,id).fetch_one(db_pool()).await?;
+        "#,
+            id
+        )
+        .fetch_one(db_pool())
+        .await?;
         Ok(result)
     }
 
     /// 查询文章总数
     pub async fn query_posts_count() -> Result<i64, sqlx::Error> {
-        let result = sqlx::query!(r#"
+        let result = sqlx::query!(
+            r#"
         SELECT  COUNT(*) AS total FROM  t_posts tp;
-        "#).fetch_one(db_pool()).await?;
+        "#
+        )
+        .fetch_one(db_pool())
+        .await?;
         Ok(result.total)
     }
 
     /// 插入文章
-    pub async fn insert_post(category_id: Option<u32>, title: String, content: String, excerpt: Option<String>) -> Result<(), sqlx::Error> {
-        sqlx::query!(r#"
+    pub async fn insert_post(
+        category_id: Option<u32>,
+        title: String,
+        content: String,
+        excerpt: Option<String>,
+    ) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+            r#"
         INSERT INTO d_blog.t_posts
         (category_id, title, content, excerpt)
         VALUES(?, ?, ?, ?);
-        "#,category_id, title, content, excerpt).execute(db_pool()).await?;
+        "#,
+            category_id,
+            title,
+            content,
+            excerpt
+        )
+        .execute(db_pool())
+        .await?;
         Ok(())
     }
 
     /// 更新文章的分类标签
-    pub async fn update_post_category(id: u32, category_id: Option<u32>) -> Result<(), sqlx::Error> {
-        sqlx::query!(r#"
+    pub async fn update_post_category(
+        id: u32,
+        category_id: Option<u32>,
+    ) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+            r#"
         UPDATE d_blog.t_posts
         SET category_id=?
         WHERE id=?;
-        "#,category_id, id).execute(db_pool()).await?;
+        "#,
+            category_id,
+            id
+        )
+        .execute(db_pool())
+        .await?;
         Ok(())
     }
 }
@@ -125,8 +158,13 @@ pub struct PostCategory {
 }
 
 impl PostCategory {
-    pub async fn query_posts_list(limit: u32, offset: u32) -> Result<Vec<PostCategory>, sqlx::Error> {
-        let list = sqlx::query_as!(PostCategory,r#"
+    pub async fn query_posts_list(
+        limit: u32,
+        offset: u32,
+    ) -> Result<Vec<PostCategory>, sqlx::Error> {
+        let list = sqlx::query_as!(
+            PostCategory,
+            r#"
             SELECT
             tp.id,
             tc.name AS category_name,
@@ -138,12 +176,19 @@ impl PostCategory {
             tp.updated_at
             FROM t_posts tp LEFT JOIN t_categories tc ON tp.category_id = tc.id
             ORDER BY tp.updated_at DESC LIMIT ? OFFSET ?;
-        "#, limit, offset).fetch_all(db_pool()).await?;
+        "#,
+            limit,
+            offset
+        )
+        .fetch_all(db_pool())
+        .await?;
         Ok(list)
     }
 
     pub async fn query_posts_by_id(id: u32) -> Result<PostCategory, sqlx::Error> {
-        let post_category = sqlx::query_as!(PostCategory,r#"
+        let post_category = sqlx::query_as!(
+            PostCategory,
+            r#"
             SELECT
             tp.id,
             tc.name AS category_name,
@@ -155,7 +200,11 @@ impl PostCategory {
             tp.updated_at
             FROM t_posts tp LEFT JOIN t_categories tc ON tp.category_id = tc.id
             WHERE tp.id = ?;
-        "#,id).fetch_one(db_pool()).await?;
+        "#,
+            id
+        )
+        .fetch_one(db_pool())
+        .await?;
         Ok(post_category)
     }
 }
@@ -184,7 +233,15 @@ mod posts_test {
 
     #[tokio::test]
     async fn test_insert_one() {
-        Post::insert_post(Some(1), "我是一条测试标题".to_string(), "测试内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容...".to_string(), Some(String::from("我是一条摘要"))).await.unwrap();
+        Post::insert_post(
+            Some(1),
+            "我是一条测试标题".to_string(),
+            "测试内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容..."
+                .to_string(),
+            Some(String::from("我是一条摘要")),
+        )
+        .await
+        .unwrap();
     }
 
     #[tokio::test]
