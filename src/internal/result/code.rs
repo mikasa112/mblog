@@ -21,6 +21,8 @@ pub enum Code {
         #[from]
         validation_error: validator::ValidationErrors,
     },
+    #[error("参数解析错误")]
+    SimpleParamsError,
 }
 
 #[async_trait]
@@ -48,6 +50,9 @@ impl Writer for Code {
                     .collect::<Vec<String>>()
                     .join("; ");
                 (10002, Some(x))
+            }
+            Code::SimpleParamsError => {
+                (10003, None)
             }
         };
         res.render(Json(ObjResponse::<()> {
