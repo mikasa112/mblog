@@ -1,10 +1,10 @@
+use crate::app;
 use crate::app::service::posts::{list, one_of_id, PostParams, Posts, UpdatePostParams};
 use crate::internal::result::code::Code;
 use crate::internal::result::response::{ListResponse, ObjResponse};
 use crate::internal::result::ApiResult;
 use salvo::{handler, Request};
 use validator::Validate;
-use crate::app;
 
 #[handler]
 pub async fn list_posts(req: &mut Request) -> ApiResult<ListResponse<Posts>> {

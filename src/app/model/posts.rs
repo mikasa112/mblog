@@ -61,8 +61,8 @@ impl Post {
             limit,
             offset
         )
-            .fetch_all(db_pool())
-            .await?;
+        .fetch_all(db_pool())
+        .await?;
         Ok(result)
     }
 
@@ -85,8 +85,8 @@ impl Post {
         "#,
             id
         )
-            .fetch_one(db_pool())
-            .await?;
+        .fetch_one(db_pool())
+        .await?;
         Ok(result)
     }
 
@@ -97,8 +97,8 @@ impl Post {
         SELECT  COUNT(*) AS total FROM  t_posts tp;
         "#
         )
-            .fetch_one(db_pool())
-            .await?;
+        .fetch_one(db_pool())
+        .await?;
         Ok(result.total)
     }
 
@@ -120,8 +120,8 @@ impl Post {
             content,
             excerpt
         )
-            .execute(db_pool())
-            .await?;
+        .execute(db_pool())
+        .await?;
         Ok(())
     }
 
@@ -139,8 +139,8 @@ impl Post {
             category_id,
             id
         )
-            .execute(db_pool())
-            .await?;
+        .execute(db_pool())
+        .await?;
         Ok(())
     }
 
@@ -232,8 +232,8 @@ impl PostCategory {
             limit,
             offset
         )
-            .fetch_all(db_pool())
-            .await?;
+        .fetch_all(db_pool())
+        .await?;
         Ok(list)
     }
 
@@ -255,8 +255,8 @@ impl PostCategory {
         "#,
             id
         )
-            .fetch_one(db_pool())
-            .await?;
+        .fetch_one(db_pool())
+        .await?;
         Ok(post_category)
     }
 }
@@ -292,8 +292,8 @@ mod posts_test {
                 .to_string(),
             Some(String::from("我是一条摘要")),
         )
-            .await
-            .unwrap();
+        .await
+        .unwrap();
     }
 
     #[tokio::test]
@@ -308,9 +308,10 @@ mod posts_test {
         assert!(posts.len() <= 10);
     }
 
-
     #[tokio::test]
     async fn test_update_post() {
-        Post::update_post(1, Some(1), Some("标题2标题2".to_string()), None, None).await.unwrap();
+        Post::update_post(1, Some(1), Some("标题2标题2".to_string()), None, None)
+            .await
+            .unwrap();
     }
 }

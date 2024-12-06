@@ -26,8 +26,8 @@ impl Category {
         FROM  t_categories tc;
         "#
         )
-            .fetch_all(db_pool())
-            .await?;
+        .fetch_all(db_pool())
+        .await?;
         Ok(categories)
     }
 
@@ -42,8 +42,8 @@ impl Category {
             name,
             description
         )
-            .execute(db_pool())
-            .await?;
+        .execute(db_pool())
+        .await?;
         Ok(())
     }
 

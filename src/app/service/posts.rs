@@ -71,7 +71,7 @@ pub async fn create_post(params: PostParams) -> ApiResult<ObjResponse<()>> {
         params.content,
         params.excerpt,
     )
-        .await?;
+    .await?;
     Ok(ObjResponse {
         err_msg: None,
         status: 0,
@@ -97,7 +97,6 @@ pub struct UpdatePostParams {
     pub excerpt: Option<String>,
 }
 
-
 pub async fn update_post(params: UpdatePostParams) -> ApiResult<ObjResponse<()>> {
     model::posts::Post::update_post(
         params.id,
@@ -105,7 +104,8 @@ pub async fn update_post(params: UpdatePostParams) -> ApiResult<ObjResponse<()>>
         params.title,
         params.content,
         params.excerpt,
-    ).await?;
+    )
+    .await?;
     Ok(ObjResponse {
         err_msg: None,
         status: 0,

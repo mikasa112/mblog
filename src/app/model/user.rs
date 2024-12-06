@@ -19,8 +19,8 @@ impl User {
         "#,
             username
         )
-            .fetch_one(db_pool())
-            .await?;
+        .fetch_one(db_pool())
+        .await?;
         Ok(user)
     }
 }
@@ -28,7 +28,9 @@ impl User {
 mod test {
     #[tokio::test]
     async fn test_query_user() {
-        let u = crate::app::model::user::User::query_user(String::from("mikasa")).await.unwrap();
+        let u = crate::app::model::user::User::query_user(String::from("mikasa"))
+            .await
+            .unwrap();
         println!("{:?}", u);
     }
 }
