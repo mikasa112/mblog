@@ -51,9 +51,7 @@ impl Writer for Code {
                     .join("; ");
                 (10002, Some(x))
             }
-            Code::SimpleParamsError => {
-                (10003, None)
-            }
+            Code::SimpleParamsError => (10003, Some(self.to_string())),
         };
         res.render(Json(ObjResponse::<()> {
             err_msg: msg,

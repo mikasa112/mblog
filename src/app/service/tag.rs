@@ -1,8 +1,8 @@
+use crate::app::model;
+use crate::internal::result::response::{ListResponse, ObjResponse};
+use crate::internal::result::ApiResult;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
-use crate::internal::result::ApiResult;
-use crate::internal::result::response::{ListResponse, ObjResponse};
-use crate::app::model;
 
 #[derive(Debug, Serialize, Deserialize, Validate)]
 pub struct TagParams {
@@ -34,12 +34,14 @@ pub async fn delete_tag(id: u32) -> ApiResult<ObjResponse<()>> {
 }
 
 pub async fn list() -> ApiResult<ListResponse<Tag>> {
-    let list = model::tag::Tag::list().await?.into_iter().map(|it| {
-        Tag {
+    let list = model::tag::Tag::list()
+        .await?
+        .into_iter()
+        .map(|it| Tag {
             id: it.id,
             name: it.name,
-        }
-    }).collect();
+        })
+        .collect();
     Ok(ListResponse {
         err_msg: None,
         status: 0,
@@ -50,13 +52,37 @@ pub async fn list() -> ApiResult<ListResponse<Tag>> {
 
 #[derive(Debug, Serialize)]
 pub struct TagAndPost {
-    pub id: u32,
-    pub name: String,
-    pub post_id: u32,
+    pub id: Option<u32>,
+    pub tag_name: Option<String>,
+    pub posts: Vec<TagPost>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct TagPost {
+    pub post_id: Option<u32>,
     pub post_title: String,
 }
 
 pub async fn tag(id: u32) -> ApiResult<ObjResponse<TagAndPost>> {
+    let vec = model::tag::Tag::tag(id).await?;
+    if !vec.is_empty() {
+        let tag_and_post = TagAndPost {
+            id: vec[0].id,
+            tag_name: vec[0].name.clone(),
+            posts: vec
+                .into_iter()
+                .map(|it| TagPost {
+                    post_id: it.id,
+                    post_title: it.post_title,
+                })
+                .collect(),
+        };
+        return Ok(ObjResponse {
+            err_msg: None,
+            status: 0,
+            data: Some(tag_and_post),
+        });
+    };
     Ok(ObjResponse {
         err_msg: None,
         status: 0,

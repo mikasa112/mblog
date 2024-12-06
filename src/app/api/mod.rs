@@ -1,8 +1,8 @@
 use salvo::Router;
 
 pub mod account_api;
-pub mod posts_api;
 pub mod category_api;
+pub mod posts_api;
 pub mod tag_api;
 
 use crate::app::api::posts_api::{create_post, update_post};
@@ -20,15 +20,21 @@ fn open_router() -> Router {
         .push(Router::with_path("posts/<id>").get(one_post))
         //分类列表
         .push(Router::with_path("categories").get(category_api::categories))
-
+        //标签列表
         .push(Router::with_path("tags").get(tag_api::tag_list))
+        //单个标签
+        .push(Router::with_path("tags/<id>").get(tag_api::get_tag))
 }
 
 fn auth_router() -> Router {
     Router::new()
         .hoop(auth_handler())
         //创建文章、更新文章
-        .push(Router::with_path("posts").post(create_post).put(update_post))
+        .push(
+            Router::with_path("posts")
+                .post(create_post)
+                .put(update_post),
+        )
         //创建分类
         .push(Router::with_path("category").post(category_api::create_category))
         //创建标签
