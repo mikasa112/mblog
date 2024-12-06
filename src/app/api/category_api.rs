@@ -1,9 +1,9 @@
+use crate::app::service;
+use crate::internal::result::response::{ListResponse, ObjResponse};
+use crate::internal::result::ApiResult;
 use salvo::{handler, Request};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
-use crate::internal::result::ApiResult;
-use crate::internal::result::response::{ListResponse, ObjResponse};
-use crate::app::service;
 
 #[handler]
 pub async fn categories() -> ApiResult<ListResponse<service::category::CategorySimpler>> {

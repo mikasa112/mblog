@@ -1,5 +1,5 @@
-use serde::Serialize;
 use crate::internal::core::database::db_pool;
+use serde::Serialize;
 use sqlx::types::chrono::NaiveDateTime;
 use sqlx::FromRow;
 
@@ -11,7 +11,6 @@ pub struct Category {
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
-
 
 impl Category {
     /// 查询所有分类
@@ -28,8 +27,8 @@ impl Category {
         FROM  t_categories tc;
         "#
         )
-            .fetch_all(db_pool())
-            .await?;
+        .fetch_all(db_pool())
+        .await?;
         Ok(categories)
     }
 
@@ -44,8 +43,8 @@ impl Category {
             name,
             description
         )
-            .execute(db_pool())
-            .await?;
+        .execute(db_pool())
+        .await?;
         Ok(())
     }
 }
@@ -59,11 +58,12 @@ pub struct CategorySimpler {
     pub post_count: i64,
 }
 
-
 impl CategorySimpler {
     /// 按时间降序查询分类列表以及分类列表下的文章总数
     pub async fn list() -> Result<Vec<CategorySimpler>, sqlx::Error> {
-        let list = sqlx::query_as!(CategorySimpler,r#"
+        let list = sqlx::query_as!(
+            CategorySimpler,
+            r#"
            SELECT
              tc.id,
              tc.name,
@@ -79,7 +79,10 @@ impl CategorySimpler {
              tc.id, tc.name, tc.description
          ORDER BY
              tc.updated_at DESC;
-        "#).fetch_all(db_pool()).await?;
+        "#
+        )
+        .fetch_all(db_pool())
+        .await?;
         Ok(list)
     }
 }
@@ -87,7 +90,12 @@ impl CategorySimpler {
 mod test {
     #[tokio::test]
     async fn test_create() {
-        crate::app::model::category::Category::create(String::from("算法"), Some(String::from("算法学习"))).await.unwrap();
+        crate::app::model::category::Category::create(
+            String::from("算法"),
+            Some(String::from("算法学习")),
+        )
+        .await
+        .unwrap();
     }
 
     #[tokio::test]

@@ -1,9 +1,8 @@
-use serde::Serialize;
 use crate::app::api::category_api::CategoryParams;
 use crate::app::model;
-use crate::internal::result::ApiResult;
 use crate::internal::result::response::{ListResponse, ObjResponse};
-
+use crate::internal::result::ApiResult;
+use serde::Serialize;
 
 // #[derive(Serialize, Debug)]
 // pub struct Category {
@@ -25,14 +24,16 @@ pub struct CategorySimpler {
 }
 
 pub async fn list() -> ApiResult<ListResponse<CategorySimpler>> {
-    let list = model::category::CategorySimpler::list().await?.into_iter().map(|it| {
-        CategorySimpler {
+    let list = model::category::CategorySimpler::list()
+        .await?
+        .into_iter()
+        .map(|it| CategorySimpler {
             id: it.id,
             name: it.name,
             description: it.description,
             post_count: it.post_count,
-        }
-    }).collect();
+        })
+        .collect();
     Ok(ListResponse {
         err_msg: None,
         status: 0,
@@ -40,7 +41,6 @@ pub async fn list() -> ApiResult<ListResponse<CategorySimpler>> {
         total: None,
     })
 }
-
 
 pub async fn create(params: CategoryParams) -> ApiResult<ObjResponse<()>> {
     model::category::Category::create(params.name, params.description).await?;
