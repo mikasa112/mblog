@@ -57,5 +57,9 @@ pub struct TagAndPost {
 }
 
 pub async fn tag(id: u32) -> ApiResult<ObjResponse<TagAndPost>> {
-
+    Ok(ObjResponse {
+        err_msg: None,
+        status: 0,
+        data: None,
+    })
 }
