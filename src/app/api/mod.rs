@@ -20,6 +20,7 @@ fn open_router() -> Router {
         .push(Router::with_path("posts/<id>").get(one_post))
         //分类列表
         .push(Router::with_path("categories").get(category_api::categories))
+
         .push(Router::with_path("tags").get(tag_api::tag_list))
 }
 

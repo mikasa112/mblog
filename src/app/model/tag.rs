@@ -51,4 +51,23 @@ impl Tag {
         "#,id).execute(db_pool()).await?;
         Ok(())
     }
+
+    pub async fn tag(id: u32) -> Result<TagPost, sqlx::Error> {
+        let t = sqlx::query_as!(TagPost,r#"
+     SELECT
+        tp.id , tt.name,tp.id AS post_id, tp.title AS post_title
+     FROM
+	    d_blog.t_post_tags tpt
+     JOIN
+	    d_blog.t_posts tp
+     ON
+	    tpt.post_id = tp.id
+     LEFT JOIN
+       	d_blog.t_tags tt
+     ON
+	    tpt.tag_id = tt.id
+     WHERE
+	    tpt.tag_id = 1;
+        "#,id).exe
+    }
 }
