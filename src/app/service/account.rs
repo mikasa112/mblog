@@ -43,7 +43,7 @@ pub async fn login(params: Account) -> ApiResult<ObjResponse<String>> {
                         .as_bytes(),
                 ),
             )
-            .map_err(|e| {
+            .map_err(|_e| {
                 return Code::New(99997, String::from("TOKEN生成失败"));
             })?;
             Ok(ObjResponse {

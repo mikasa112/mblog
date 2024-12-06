@@ -26,8 +26,8 @@ impl Category {
         FROM  t_categories tc;
         "#
         )
-        .fetch_all(db_pool())
-        .await?;
+            .fetch_all(db_pool())
+            .await?;
         Ok(categories)
     }
 
@@ -42,8 +42,8 @@ impl Category {
             name,
             description
         )
-        .execute(db_pool())
-        .await?;
+            .execute(db_pool())
+            .await?;
         Ok(())
     }
 
@@ -56,11 +56,9 @@ mod test {
     //     Categories::create(String::from("算法"), Some(String::from("算法学习"))).await.unwrap();
     // }
 
-    use crate::app::model::category::Category;
-
     #[tokio::test]
     async fn test_list() {
-        let list = Category::list().await.unwrap();
+        let list = crate::app::model::category::Category::list().await.unwrap();
         println!("{:?}", list);
         assert!(list.len() > 0);
     }

@@ -1,9 +1,10 @@
-use crate::app::service::posts::{create_post, list, one_of_id, PostParams, Posts};
+use crate::app::service::posts::{list, one_of_id, PostParams, Posts, UpdatePostParams};
 use crate::internal::result::code::Code;
 use crate::internal::result::response::{ListResponse, ObjResponse};
 use crate::internal::result::ApiResult;
 use salvo::{handler, Request};
 use validator::Validate;
+use crate::app;
 
 #[handler]
 pub async fn list_posts(req: &mut Request) -> ApiResult<ListResponse<Posts>> {
@@ -17,7 +18,7 @@ pub async fn list_posts(req: &mut Request) -> ApiResult<ListResponse<Posts>> {
 }
 
 #[handler]
-pub async fn one_posts(req: &mut Request) -> ApiResult<ObjResponse<Posts>> {
+pub async fn one_post(req: &mut Request) -> ApiResult<ObjResponse<Posts>> {
     let id = req
         .params()
         .get("id")
@@ -28,8 +29,15 @@ pub async fn one_posts(req: &mut Request) -> ApiResult<ObjResponse<Posts>> {
 }
 
 #[handler]
-pub async fn create_posts(req: &mut Request) -> ApiResult<ObjResponse<()>> {
+pub async fn create_post(req: &mut Request) -> ApiResult<ObjResponse<()>> {
     let params = req.parse_json::<PostParams>().await?;
     params.validate()?;
-    create_post(params).await
+    app::service::posts::create_post(params).await
+}
+
+#[handler]
+pub async fn update_post(req: &mut Request) -> ApiResult<ObjResponse<()>> {
+    let params = req.parse_json::<UpdatePostParams>().await?;
+    params.validate()?;
+    app::service::posts::update_post(params).await
 }

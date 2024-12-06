@@ -1,6 +1,6 @@
 use crate::internal::core::database::db_pool;
 use sqlx::types::chrono::NaiveDateTime;
-use sqlx::{FromRow, Type};
+use sqlx::{FromRow, MySql, QueryBuilder, Type};
 
 #[derive(FromRow, Debug)]
 pub struct Post {
@@ -23,7 +23,7 @@ pub enum Status {
 }
 
 // 避免孤儿规则
-#[warn(dead_code)]
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct MStatus(Option<Status>);
 impl From<Option<String>> for MStatus {
@@ -61,8 +61,8 @@ impl Post {
             limit,
             offset
         )
-        .fetch_all(db_pool())
-        .await?;
+            .fetch_all(db_pool())
+            .await?;
         Ok(result)
     }
 
@@ -85,8 +85,8 @@ impl Post {
         "#,
             id
         )
-        .fetch_one(db_pool())
-        .await?;
+            .fetch_one(db_pool())
+            .await?;
         Ok(result)
     }
 
@@ -97,8 +97,8 @@ impl Post {
         SELECT  COUNT(*) AS total FROM  t_posts tp;
         "#
         )
-        .fetch_one(db_pool())
-        .await?;
+            .fetch_one(db_pool())
+            .await?;
         Ok(result.total)
     }
 
@@ -120,8 +120,8 @@ impl Post {
             content,
             excerpt
         )
-        .execute(db_pool())
-        .await?;
+            .execute(db_pool())
+            .await?;
         Ok(())
     }
 
@@ -139,8 +139,60 @@ impl Post {
             category_id,
             id
         )
-        .execute(db_pool())
-        .await?;
+            .execute(db_pool())
+            .await?;
+        Ok(())
+    }
+
+    /// 动态生成的更新文章SQL
+    pub async fn update_post(
+        id: u32,
+        category_id: Option<u32>,
+        title: Option<String>,
+        content: Option<String>,
+        excerpt: Option<String>,
+    ) -> Result<(), sqlx::Error> {
+        let mut builder: QueryBuilder<MySql> = QueryBuilder::new("UPDATE d_blog.t_posts tt SET ");
+        let mut has_update = false;
+        if let Some(it) = category_id {
+            if has_update {
+                builder.push(", ");
+            }
+            builder.push("tt.category_id = ");
+            builder.push_bind(it);
+            has_update = true;
+        }
+        if let Some(it) = title {
+            if has_update {
+                builder.push(", ");
+            }
+            builder.push("tt.title = ");
+            builder.push_bind(it);
+            has_update = true;
+        }
+        if let Some(it) = content {
+            if has_update {
+                builder.push(", ");
+            }
+            builder.push("tt.content = ");
+            builder.push_bind(it);
+            has_update = true;
+        }
+        if let Some(it) = excerpt {
+            if has_update {
+                builder.push(", ");
+            }
+            builder.push("tt.excerpt = ");
+            builder.push_bind(it);
+            has_update = true;
+        }
+        if !has_update {
+            return Ok(());
+        }
+        builder.push(" WHERE id =");
+        builder.push_bind(id);
+        let query = builder.build();
+        query.execute(db_pool()).await?;
         Ok(())
     }
 }
@@ -180,8 +232,8 @@ impl PostCategory {
             limit,
             offset
         )
-        .fetch_all(db_pool())
-        .await?;
+            .fetch_all(db_pool())
+            .await?;
         Ok(list)
     }
 
@@ -203,8 +255,8 @@ impl PostCategory {
         "#,
             id
         )
-        .fetch_one(db_pool())
-        .await?;
+            .fetch_one(db_pool())
+            .await?;
         Ok(post_category)
     }
 }
@@ -240,8 +292,8 @@ mod posts_test {
                 .to_string(),
             Some(String::from("我是一条摘要")),
         )
-        .await
-        .unwrap();
+            .await
+            .unwrap();
     }
 
     #[tokio::test]
@@ -254,5 +306,11 @@ mod posts_test {
         let posts = PostCategory::query_posts_list(10, 0).await.unwrap();
         println!("{:?}", posts);
         assert!(posts.len() <= 10);
+    }
+
+
+    #[tokio::test]
+    async fn test_update_post() {
+        Post::update_post(1, Some(1), Some("标题2标题2".to_string()), None, None).await.unwrap();
     }
 }

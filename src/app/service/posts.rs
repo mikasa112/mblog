@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use crate::internal::result::response::{ListResponse, ObjResponse};
 use crate::internal::result::ApiResult;
 
-use validator::Validate;
+use validator::{Validate, ValidationError};
 
 #[derive(Debug, Serialize)]
 pub struct Posts {
@@ -65,6 +65,47 @@ pub struct PostParams {
 }
 
 pub async fn create_post(params: PostParams) -> ApiResult<ObjResponse<()>> {
+    model::posts::Post::insert_post(
+        params.category_id,
+        params.title,
+        params.content,
+        params.excerpt,
+    )
+        .await?;
+    Ok(ObjResponse {
+        err_msg: None,
+        status: 0,
+        data: None,
+    })
+}
+
+fn id_validator(value: u32) -> Result<(), ValidationError> {
+    if value >= 1 {
+        Ok(())
+    } else {
+        Err(ValidationError::new("id需要大于0"))
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Validate)]
+pub struct UpdatePostParams {
+    #[validate(custom(function = "id_validator"))]
+    pub id: u32,
+    pub title: Option<String>,
+    pub category_id: Option<u32>,
+    pub content: Option<String>,
+    pub excerpt: Option<String>,
+}
+
+
+pub async fn update_post(params: UpdatePostParams) -> ApiResult<ObjResponse<()>> {
+    model::posts::Post::update_post(
+        params.id,
+        params.category_id,
+        params.title,
+        params.content,
+        params.excerpt,
+    ).await?;
     Ok(ObjResponse {
         err_msg: None,
         status: 0,
