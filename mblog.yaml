@@ -4,4 +4,4 @@ application:
   secret_key: 'asdkf44as223'
 
 database:
-  url: "mysql://root:mikasa520.@122.51.163.61/d_blog"
+  url: "mysql://mikasa:Mikasa520.@122.51.163.61/d_blog"
