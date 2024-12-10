@@ -1,5 +1,7 @@
 use crate::app;
-use crate::app::service::posts::{list, one_of_id, PostDetail, PostParams, PostTagsParams, Posts, UpdatePostParams};
+use crate::app::service::posts::{
+    list, one_of_id, PostDetail, PostParams, PostTagsParams, Posts, UpdatePostParams,
+};
 use crate::internal::result::code::Code;
 use crate::internal::result::response::{ListResponse, ObjResponse};
 use crate::internal::result::ApiResult;

@@ -61,8 +61,8 @@ impl Post {
             limit,
             offset
         )
-            .fetch_all(db_pool())
-            .await?;
+        .fetch_all(db_pool())
+        .await?;
         Ok(result)
     }
 
@@ -85,8 +85,8 @@ impl Post {
         "#,
             id
         )
-            .fetch_one(db_pool())
-            .await?;
+        .fetch_one(db_pool())
+        .await?;
         Ok(result)
     }
 
@@ -97,8 +97,8 @@ impl Post {
         SELECT  COUNT(*) AS total FROM  t_posts tp;
         "#
         )
-            .fetch_one(db_pool())
-            .await?;
+        .fetch_one(db_pool())
+        .await?;
         Ok(result.total)
     }
 
@@ -120,8 +120,8 @@ impl Post {
             content,
             excerpt
         )
-            .execute(db_pool())
-            .await?;
+        .execute(db_pool())
+        .await?;
         Ok(())
     }
 
@@ -139,8 +139,8 @@ impl Post {
             category_id,
             id
         )
-            .execute(db_pool())
-            .await?;
+        .execute(db_pool())
+        .await?;
         Ok(())
     }
 
@@ -199,20 +199,28 @@ impl Post {
     /// 对文章绑定标签
     pub async fn insert_post_tag(post_id: u32, tag_id: u32) -> Result<(), sqlx::Error> {
         sqlx::query!(
-          r#"
+            r#"
           INSERT INTO d_blog.t_post_tags (post_id, tag_id) VALUES(?, ?);
-          "#
-        ,post_id, tag_id).execute(db_pool()).await?;
+          "#,
+            post_id,
+            tag_id
+        )
+        .execute(db_pool())
+        .await?;
         Ok(())
     }
 
     /// 删除{post_id}文章的{tag_id}标签
     pub async fn delete_post_tag(post_id: u32, tag_id: u32) -> Result<(), sqlx::Error> {
         sqlx::query!(
-          r#"
+            r#"
           DELETE FROM d_blog.t_post_tags WHERE post_id = ? AND tag_id = ?;
-          "#
-        ,post_id, tag_id).execute(db_pool()).await?;
+          "#,
+            post_id,
+            tag_id
+        )
+        .execute(db_pool())
+        .await?;
         Ok(())
     }
 }
@@ -265,8 +273,8 @@ impl PostCategory {
             limit,
             offset
         )
-            .fetch_all(db_pool())
-            .await?;
+        .fetch_all(db_pool())
+        .await?;
         Ok(list)
     }
 
@@ -311,9 +319,7 @@ impl PostCategory {
             .await?;
         if !posts.is_empty() {
             let p_one = posts[0].clone();
-            let tags = posts.into_iter().map(|it| {
-                it.tag_name
-            }).collect();
+            let tags = posts.into_iter().map(|it| it.tag_name).collect();
             let p = PDetail {
                 id: p_one.id,
                 category_name: p_one.category_name,
@@ -363,8 +369,8 @@ mod posts_test {
                 .to_string(),
             Some(String::from("我是一条摘要")),
         )
-            .await
-            .unwrap();
+        .await
+        .unwrap();
     }
 
     #[tokio::test]

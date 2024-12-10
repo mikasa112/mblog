@@ -1,9 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::sync::LazyLock;
 
-pub static BLOG_CONFIG: LazyLock<MyBlogConfig> = LazyLock::new(|| {
-    serde_yml::from_str(include_str!("D:/code/mblog/mblog.yaml")).unwrap()
-});
+pub static BLOG_CONFIG: LazyLock<MyBlogConfig> =
+    LazyLock::new(|| serde_yml::from_str(include_str!("D:/code/mblog/mblog.yaml")).unwrap());
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MyBlogConfig {

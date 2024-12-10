@@ -6,8 +6,9 @@ pub mod category_api;
 pub mod posts_api;
 pub mod tag_api;
 
-use crate::app::api::posts_api::{create_post, update_post, create_post_tags, delete_post_tag};
+use crate::app::api::posts_api::{create_post, create_post_tags, delete_post_tag, update_post};
 use crate::internal::middleware::auth::auth_handler;
+use crate::internal::middleware::catch_panic::CatchPanic;
 use crate::internal::middleware::log::LogMiddleware;
 use posts_api::{list_posts, one_post};
 
@@ -34,11 +35,13 @@ fn auth_router() -> Router {
         .push(
             Router::with_path("posts")
                 .post(create_post)
-                .put(update_post)
+                .put(update_post),
         )
         //绑定文章-标签、删除文章-标签
         .push(
-            Router::with_path("posts/tags").post(create_post_tags).delete(delete_post_tag)
+            Router::with_path("posts/tags")
+                .post(create_post_tags)
+                .delete(delete_post_tag),
         )
         //创建分类
         .push(Router::with_path("category").post(category_api::create_category))
@@ -50,12 +53,12 @@ fn auth_router() -> Router {
 
 pub fn root_router() -> Router {
     Router::new()
+        .hoop(CatchPanic::new())
         .hoop(LogMiddleware::new())
         .path("v1")
         .push(open_router())
         .push(auth_router())
 }
-
 
 pub fn id_validator(value: u32) -> Result<(), ValidationError> {
     if value >= 1 {

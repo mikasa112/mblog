@@ -102,14 +102,13 @@ pub async fn create_post(params: PostParams) -> ApiResult<ObjResponse<()>> {
         params.content,
         params.excerpt,
     )
-        .await?;
+    .await?;
     Ok(ObjResponse {
         err_msg: None,
         status: 0,
         data: None,
     })
 }
-
 
 #[derive(Debug, Serialize, Deserialize, Validate)]
 pub struct UpdatePostParams {
@@ -129,14 +128,13 @@ pub async fn update_post(params: UpdatePostParams) -> ApiResult<ObjResponse<()>>
         params.content,
         params.excerpt,
     )
-        .await?;
+    .await?;
     Ok(ObjResponse {
         err_msg: None,
         status: 0,
         data: None,
     })
 }
-
 
 #[derive(Debug, Serialize, Deserialize, Validate)]
 pub struct PostTagsParams {
@@ -155,7 +153,6 @@ pub async fn create_post_tag(params: PostTagsParams) -> ApiResult<ObjResponse<()
         data: None,
     })
 }
-
 
 /// 删除{post_id}文章的{tag_id}标签
 pub async fn delete_post_tag(params: PostTagsParams) -> ApiResult<ObjResponse<()>> {
