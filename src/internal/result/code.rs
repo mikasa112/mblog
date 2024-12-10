@@ -30,8 +30,8 @@ impl Writer for Code {
     async fn write(self, _req: &mut Request, _depot: &mut Depot, res: &mut Response) {
         let (code, msg) = match self {
             Code::New(code, msg) => (code, Some(msg)),
-            Code::InternalServerError { source } => (10000, Some(source.to_string())),
-            Code::ParamsError { source } => (10001, Some(source.to_string())),
+            Code::InternalServerError { .. } => (10000, Some(self.to_string())),
+            Code::ParamsError { .. } => (10001, Some(self.to_string())),
             Code::ValidationError { validation_error } => {
                 let x = validation_error
                     .field_errors()
