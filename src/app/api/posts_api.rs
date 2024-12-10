@@ -1,5 +1,5 @@
 use crate::app;
-use crate::app::service::posts::{list, one_of_id, PostParams, Posts, UpdatePostParams};
+use crate::app::service::posts::{list, one_of_id, PostDetail, PostParams, Posts, UpdatePostParams};
 use crate::internal::result::code::Code;
 use crate::internal::result::response::{ListResponse, ObjResponse};
 use crate::internal::result::ApiResult;
@@ -18,7 +18,7 @@ pub async fn list_posts(req: &mut Request) -> ApiResult<ListResponse<Posts>> {
 }
 
 #[handler]
-pub async fn one_post(req: &mut Request) -> ApiResult<ObjResponse<Posts>> {
+pub async fn one_post(req: &mut Request) -> ApiResult<ObjResponse<PostDetail>> {
     let id = req
         .params()
         .get("id")

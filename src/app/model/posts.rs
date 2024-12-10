@@ -14,7 +14,7 @@ pub struct Post {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Type, Debug)]
+#[derive(Type, Debug, Copy, Clone)]
 #[sqlx(type_name = "status")] // 数据库中自定义类型的名称
 #[sqlx(rename_all = "lowercase")] // 指定如何将枚举值映射到数据库
 pub enum Status {
@@ -24,7 +24,7 @@ pub enum Status {
 
 // 避免孤儿规则
 #[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct MStatus(Option<Status>);
 impl From<Option<String>> for MStatus {
     fn from(value: Option<String>) -> Self {
@@ -61,8 +61,8 @@ impl Post {
             limit,
             offset
         )
-        .fetch_all(db_pool())
-        .await?;
+            .fetch_all(db_pool())
+            .await?;
         Ok(result)
     }
 
@@ -85,8 +85,8 @@ impl Post {
         "#,
             id
         )
-        .fetch_one(db_pool())
-        .await?;
+            .fetch_one(db_pool())
+            .await?;
         Ok(result)
     }
 
@@ -97,8 +97,8 @@ impl Post {
         SELECT  COUNT(*) AS total FROM  t_posts tp;
         "#
         )
-        .fetch_one(db_pool())
-        .await?;
+            .fetch_one(db_pool())
+            .await?;
         Ok(result.total)
     }
 
@@ -120,8 +120,8 @@ impl Post {
             content,
             excerpt
         )
-        .execute(db_pool())
-        .await?;
+            .execute(db_pool())
+            .await?;
         Ok(())
     }
 
@@ -139,8 +139,8 @@ impl Post {
             category_id,
             id
         )
-        .execute(db_pool())
-        .await?;
+            .execute(db_pool())
+            .await?;
         Ok(())
     }
 
@@ -209,6 +209,19 @@ pub struct PostCategory {
     pub updated_at: NaiveDateTime,
 }
 
+#[derive(FromRow, Debug)]
+pub struct PDetail {
+    pub id: u32,
+    pub category_name: Option<String>,
+    pub title: String,
+    pub content: String,
+    pub excerpt: Option<String>,
+    pub status: MStatus,
+    pub tags: Option<Vec<String>>,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+}
+
 impl PostCategory {
     pub async fn query_posts_list(
         limit: u32,
@@ -232,32 +245,70 @@ impl PostCategory {
             limit,
             offset
         )
-        .fetch_all(db_pool())
-        .await?;
+            .fetch_all(db_pool())
+            .await?;
         Ok(list)
     }
 
-    pub async fn query_posts_by_id(id: u32) -> Result<PostCategory, sqlx::Error> {
-        let post_category = sqlx::query_as!(
-            PostCategory,
+    pub async fn query_posts_by_id(id: u32) -> Result<Option<PDetail>, sqlx::Error> {
+        #[derive(FromRow, Debug, Clone)]
+        struct Post {
+            pub id: u32,
+            pub category_name: Option<String>,
+            pub title: Option<String>,
+            pub content: Option<String>,
+            pub excerpt: Option<String>,
+            pub status: MStatus,
+            pub tag_name: Option<String>,
+            pub created_at: NaiveDateTime,
+            pub updated_at: NaiveDateTime,
+        }
+        let posts = sqlx::query_as!(
+            Post,
             r#"
             SELECT
-            tp.id,
-            tc.name AS category_name,
-            tp.title,
-            tp.content,
-            tp.excerpt,
-            tp.status,
-            tp.created_at,
-            tp.updated_at
-            FROM t_posts tp LEFT JOIN t_categories tc ON tp.category_id = tc.id
-            WHERE tp.id = ?;
-        "#,
+            tp.id, tc.name AS category_name, tp.title, tp.content, tp.excerpt, tp.status, tp.created_at, tp.updated_at, tt.name AS tag_name
+            FROM
+                d_blog.t_posts tp
+            LEFT JOIN
+                d_blog.t_categories tc
+            ON
+                tp.category_id = tc.id
+            LEFT JOIN
+                d_blog.t_post_tags tpt
+            ON
+                tp.id = tpt.post_id
+            LEFT JOIN
+                d_blog.t_tags tt
+            ON
+                tpt.tag_id = tt.id
+            WHERE
+                tp.id = ?;
+            "#,
             id
         )
-        .fetch_one(db_pool())
-        .await?;
-        Ok(post_category)
+            .fetch_all(db_pool())
+            .await?;
+        if !posts.is_empty() {
+            let p_one = posts[0].clone();
+            let tags = posts.into_iter().map(|it| {
+                it.tag_name
+            }).collect();
+            let p = PDetail {
+                id: p_one.id,
+                category_name: p_one.category_name,
+                title: p_one.title.unwrap_or("".to_string()),
+                content: p_one.content.unwrap_or("".to_string()),
+                excerpt: p_one.excerpt,
+                status: p_one.status,
+                tags,
+                created_at: p_one.created_at,
+                updated_at: p_one.updated_at,
+            };
+            Ok(Some(p))
+        } else {
+            Ok(None)
+        }
     }
 }
 
@@ -292,8 +343,8 @@ mod posts_test {
                 .to_string(),
             Some(String::from("我是一条摘要")),
         )
-        .await
-        .unwrap();
+            .await
+            .unwrap();
     }
 
     #[tokio::test]

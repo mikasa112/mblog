@@ -1,8 +1,8 @@
 use crate::app::model;
-use serde::{Deserialize, Serialize};
-
 use crate::internal::result::response::{ListResponse, ObjResponse};
 use crate::internal::result::ApiResult;
+use crate::internal::utils::date_utils;
+use serde::{Deserialize, Serialize};
 
 use validator::{Validate, ValidationError};
 
@@ -27,8 +27,8 @@ impl From<model::posts::PostCategory> for Posts {
             title: it.title,
             content: it.content,
             excerpt: it.excerpt,
-            created_at: format!("{}", it.created_at.format("%Y-%m-%d %H:%M:%S")),
-            updated_at: format!("{}", it.updated_at.format("%Y-%m-%d %H:%M:%S")),
+            created_at: date_utils::naive_date_format(it.created_at),
+            updated_at: date_utils::naive_date_format(it.updated_at),
         }
     }
 }
@@ -45,12 +45,42 @@ pub async fn list(page: u32, size: u32) -> ApiResult<ListResponse<Posts>> {
     })
 }
 
-pub async fn one_of_id(id: u32) -> ApiResult<ObjResponse<Posts>> {
-    let it = model::posts::PostCategory::query_posts_by_id(id).await?;
+#[derive(Serialize, Debug)]
+pub struct PostDetail {
+    pub id: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub category_name: Option<String>,
+    pub title: String,
+    pub content: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub excerpt: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tags: Option<Vec<String>>,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+pub async fn one_of_id(id: u32) -> ApiResult<ObjResponse<PostDetail>> {
+    if let Some(it) = model::posts::PostCategory::query_posts_by_id(id).await? {
+        return Ok(ObjResponse {
+            err_msg: None,
+            status: 0,
+            data: Some(PostDetail {
+                id: it.id,
+                category_name: it.category_name,
+                title: it.title,
+                content: it.content,
+                excerpt: it.excerpt,
+                tags: it.tags,
+                created_at: date_utils::naive_date_format(it.created_at),
+                updated_at: date_utils::naive_date_format(it.updated_at),
+            }),
+        });
+    };
     Ok(ObjResponse {
         err_msg: None,
         status: 0,
-        data: Some(it.into()),
+        data: None,
     })
 }
 
@@ -71,7 +101,7 @@ pub async fn create_post(params: PostParams) -> ApiResult<ObjResponse<()>> {
         params.content,
         params.excerpt,
     )
-    .await?;
+        .await?;
     Ok(ObjResponse {
         err_msg: None,
         status: 0,
@@ -105,7 +135,7 @@ pub async fn update_post(params: UpdatePostParams) -> ApiResult<ObjResponse<()>>
         params.content,
         params.excerpt,
     )
-    .await?;
+        .await?;
     Ok(ObjResponse {
         err_msg: None,
         status: 0,
