@@ -195,6 +195,26 @@ impl Post {
         query.execute(db_pool()).await?;
         Ok(())
     }
+
+    /// 对文章绑定标签
+    pub async fn insert_post_tag(post_id: u32, tag_id: u32) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+          r#"
+          INSERT INTO d_blog.t_post_tags (post_id, tag_id) VALUES(?, ?);
+          "#
+        ,post_id, tag_id).execute(db_pool()).await?;
+        Ok(())
+    }
+
+    /// 删除{post_id}文章的{tag_id}标签
+    pub async fn delete_post_tag(post_id: u32, tag_id: u32) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+          r#"
+          DELETE FROM d_blog.t_post_tags WHERE post_id = ? AND tag_id = ?;
+          "#
+        ,post_id, tag_id).execute(db_pool()).await?;
+        Ok(())
+    }
 }
 
 #[derive(FromRow, Debug)]

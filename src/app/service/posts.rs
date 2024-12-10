@@ -4,7 +4,8 @@ use crate::internal::result::ApiResult;
 use crate::internal::utils::date_utils;
 use serde::{Deserialize, Serialize};
 
-use validator::{Validate, ValidationError};
+use crate::app::api::id_validator;
+use validator::Validate;
 
 #[derive(Debug, Serialize)]
 pub struct Posts {
@@ -109,13 +110,6 @@ pub async fn create_post(params: PostParams) -> ApiResult<ObjResponse<()>> {
     })
 }
 
-fn id_validator(value: u32) -> Result<(), ValidationError> {
-    if value >= 1 {
-        Ok(())
-    } else {
-        Err(ValidationError::new("id需要大于0"))
-    }
-}
 
 #[derive(Debug, Serialize, Deserialize, Validate)]
 pub struct UpdatePostParams {
@@ -136,6 +130,36 @@ pub async fn update_post(params: UpdatePostParams) -> ApiResult<ObjResponse<()>>
         params.excerpt,
     )
         .await?;
+    Ok(ObjResponse {
+        err_msg: None,
+        status: 0,
+        data: None,
+    })
+}
+
+
+#[derive(Debug, Serialize, Deserialize, Validate)]
+pub struct PostTagsParams {
+    #[validate(custom(function = "id_validator"))]
+    pub post_id: u32,
+    #[validate(custom(function = "id_validator"))]
+    pub tag_id: u32,
+}
+
+/// 对文章绑定标签
+pub async fn create_post_tag(params: PostTagsParams) -> ApiResult<ObjResponse<()>> {
+    model::posts::Post::insert_post_tag(params.post_id, params.tag_id).await?;
+    Ok(ObjResponse {
+        err_msg: None,
+        status: 0,
+        data: None,
+    })
+}
+
+
+/// 删除{post_id}文章的{tag_id}标签
+pub async fn delete_post_tag(params: PostTagsParams) -> ApiResult<ObjResponse<()>> {
+    model::posts::Post::delete_post_tag(params.post_id, params.tag_id).await?;
     Ok(ObjResponse {
         err_msg: None,
         status: 0,

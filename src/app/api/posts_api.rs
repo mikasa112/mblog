@@ -1,5 +1,5 @@
 use crate::app;
-use crate::app::service::posts::{list, one_of_id, PostDetail, PostParams, Posts, UpdatePostParams};
+use crate::app::service::posts::{list, one_of_id, PostDetail, PostParams, PostTagsParams, Posts, UpdatePostParams};
 use crate::internal::result::code::Code;
 use crate::internal::result::response::{ListResponse, ObjResponse};
 use crate::internal::result::ApiResult;
@@ -40,4 +40,18 @@ pub async fn update_post(req: &mut Request) -> ApiResult<ObjResponse<()>> {
     let params = req.parse_json::<UpdatePostParams>().await?;
     params.validate()?;
     app::service::posts::update_post(params).await
+}
+
+#[handler]
+pub async fn create_post_tags(req: &mut Request) -> ApiResult<ObjResponse<()>> {
+    let params = req.parse_json::<PostTagsParams>().await?;
+    params.validate()?;
+    app::service::posts::create_post_tag(params).await
+}
+
+#[handler]
+pub async fn delete_post_tag(req: &mut Request) -> ApiResult<ObjResponse<()>> {
+    let params = req.parse_json::<PostTagsParams>().await?;
+    params.validate()?;
+    app::service::posts::delete_post_tag(params).await
 }
