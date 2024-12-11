@@ -1,7 +1,5 @@
 use crate::internal::core::my_error::MyJobError;
 use tokio_cron_scheduler::{Job, JobScheduler};
-use tracing::info;
-use crate::app::model;
 
 pub struct MyJob {
     _scheduler: JobScheduler,
@@ -21,8 +19,7 @@ impl MyJob {
     async fn sync_database_job() -> Result<Job, MyJobError> {
         let job = Job::new_async("0/10 * * * * *", |_, _| {
             Box::pin(async move {
-                let a = model::posts::PostCategory::query_posts_list(20, 0).await.unwrap();
-                info!(vec=?a)
+                todo!("暂未有什么实现")
             })
         })?;
         Ok(job)

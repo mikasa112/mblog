@@ -18,4 +18,5 @@ pub struct Application {
     pub host: String,
     pub port: usize,
     pub secret_key: String,
+    pub search_engine_dir: String,
 }

@@ -1,6 +1,7 @@
 use crate::internal::result::response::ObjResponse;
 use salvo::prelude::Json;
 use salvo::{async_trait, Depot, Request, Response, Writer};
+use crate::internal::core::my_error::SearchEngineError;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Code {
@@ -23,6 +24,11 @@ pub enum Code {
     },
     #[error("参数解析错误")]
     SimpleParamsError,
+    #[error("{source}")]
+    SearchEngineError {
+        #[from]
+        source: SearchEngineError
+    },
 }
 
 
@@ -53,6 +59,9 @@ impl Writer for Code {
                 (10002, Some(x))
             }
             Code::SimpleParamsError => (10003, Some(self.to_string())),
+            Code::SearchEngineError { .. } => {
+                (10004, Some(self.to_string()))
+            }
         };
         res.render(Json(ObjResponse::<()> {
             err_msg: msg,

@@ -21,3 +21,6 @@ Cargo.lock
 .idea/
 
 .sqlx/
+
+# tantivy 引擎 index目录
+.index/
