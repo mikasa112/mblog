@@ -4,8 +4,8 @@ use validator::ValidationError;
 pub mod account_api;
 pub mod category_api;
 pub mod posts_api;
-pub mod tag_api;
 pub mod search_api;
+pub mod tag_api;
 
 use crate::app::api::posts_api::{create_post, create_post_tags, delete_post_tag, update_post};
 use crate::internal::middleware::auth::auth_handler;

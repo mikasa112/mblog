@@ -2,7 +2,7 @@ application:
   host: '0.0.0.0'
   port: 9091
   secret_key: 'asdkf44as223'
-  search_engine_dir: 'D:/code/mblog/.index'
+  search_engine_dir: '/home/mikasa/code/mblog/.index'
 
 database:
   url: "mysql://mikasa:Mikasa520.@122.51.163.61/d_blog"
