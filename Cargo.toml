@@ -16,3 +16,6 @@ validator = { version = "0.19.0", features = ["derive"] }
 jsonwebtoken = "9.3.0"
 argon2 = "0.5.3"
 futures-util = "0.3.31"
+tantivy = "0.22.0"
+tantivy-jieba = "0.11.0"
+tokio-cron-scheduler = "0.13.0"

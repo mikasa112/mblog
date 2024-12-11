@@ -5,6 +5,7 @@ pub mod account_api;
 pub mod category_api;
 pub mod posts_api;
 pub mod tag_api;
+pub mod search_api;
 
 use crate::app::api::posts_api::{create_post, create_post_tags, delete_post_tag, update_post};
 use crate::internal::middleware::auth::auth_handler;
@@ -26,6 +27,8 @@ fn open_router() -> Router {
         .push(Router::with_path("tags").get(tag_api::tag_list))
         //单个标签
         .push(Router::with_path("tags/<id>").get(tag_api::get_tag))
+        //搜索引擎
+        .push(Router::with_path("search").get(search_api::search))
 }
 
 fn auth_router() -> Router {

@@ -25,6 +25,7 @@ pub enum Code {
     SimpleParamsError,
 }
 
+
 #[async_trait]
 impl Writer for Code {
     async fn write(self, _req: &mut Request, _depot: &mut Depot, res: &mut Response) {
