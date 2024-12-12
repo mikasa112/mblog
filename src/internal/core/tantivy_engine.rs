@@ -1,4 +1,3 @@
-use std::path::Path;
 use crate::internal::core::my_error::SearchEngineError;
 use std::sync::LazyLock;
 use tantivy::collector::TopDocs;
@@ -6,8 +5,6 @@ use tantivy::query::QueryParser;
 use tantivy::schema::{IndexRecordOption, Schema, TextFieldIndexing, TextOptions, INDEXED, STORED};
 use tantivy::tokenizer::{LowerCaser, RemoveLongFilter, Stemmer, TextAnalyzer};
 use tantivy::{Document, Index, ReloadPolicy, TantivyDocument};
-use tantivy::directory::MmapDirectory;
-use crate::internal::core::config::BLOG_CONFIG;
 
 //延迟初始化
 pub static SEARCH_ENGINE: LazyLock<Result<SearchEngine, SearchEngineError>> =
@@ -18,23 +15,25 @@ pub struct SearchEngine {
     pub index: Index,
 }
 
-
 impl SearchEngine {
     pub fn new() -> Result<Self, SearchEngineError> {
         let mut builder = Schema::builder();
-        let options = TextOptions::default()
-            .set_indexing_options(
-                TextFieldIndexing::default()
-                    .set_tokenizer("jieba")
-                    .set_index_option(IndexRecordOption::WithFreqsAndPositions),
-            );
-            // .set_stored();
+        //分词器
+        let options = TextOptions::default().set_indexing_options(
+            TextFieldIndexing::default()
+                .set_tokenizer("jieba")
+                .set_index_option(IndexRecordOption::WithFreqsAndPositions),
+        );
+        //是否保存
+        // .set_stored();
+        //定义结构
         builder.add_u64_field("id", INDEXED | STORED);
         builder.add_text_field("title", options.clone() | STORED);
         builder.add_text_field("content", options.clone());
         builder.add_text_field("excerpt", options);
         let schema = builder.build();
         // let index = Index::open_or_create(MmapDirectory::open(Path::new(BLOG_CONFIG.application.search_engine_dir.as_str()))?, schema.clone())?;
+        //内存中创建
         let index = Index::create_in_ram(schema.clone());
         let tokenizer = tantivy_jieba::JiebaTokenizer {};
         let analyzer = TextAnalyzer::builder(tokenizer)
@@ -42,9 +41,8 @@ impl SearchEngine {
             .filter(LowerCaser)
             .filter(Stemmer::default())
             .build();
+        //注册分词器
         index.tokenizers().register("jieba", analyzer);
-
-
         Ok(SearchEngine { index })
     }
 
@@ -54,9 +52,11 @@ impl SearchEngine {
         limit: usize,
         offset: usize,
     ) -> Result<Vec<String>, SearchEngineError> {
+        //索引读取器
         let reader = self
             .index
             .reader_builder()
+            //每次提交后延迟
             .reload_policy(ReloadPolicy::OnCommitWithDelay)
             .try_into()?;
         let searcher = reader.searcher();
@@ -74,16 +74,3 @@ impl SearchEngine {
         Ok(list)
     }
 }
-
-// mod test {
-//     #[test]
-//     fn test_jieba() {
-//         use tantivy::tokenizer::*;
-//         let mut tokenizer = tantivy_jieba::JiebaTokenizer {};
-//         let mut token_stream = tokenizer.token_stream("18测试标题测试标题18");
-//         while token_stream.advance() {
-//             let token_string = token_stream.next().unwrap().text.clone();
-//             println!("Token: {}", token_string);
-//         }
-//     }
-// }

@@ -62,7 +62,7 @@ pub struct PostDetail {
 }
 
 pub async fn one_of_id(id: u32) -> ApiResult<ObjResponse<PostDetail>> {
-    if let Some(it) = model::posts::PostCategory::query_posts_by_id(id).await? {
+    if let Some(it) = model::posts::PDetail::query_posts_by_id(id).await? {
         return Ok(ObjResponse {
             err_msg: None,
             status: 0,

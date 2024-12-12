@@ -237,19 +237,6 @@ pub struct PostCategory {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(FromRow, Debug)]
-pub struct PDetail {
-    pub id: u32,
-    pub category_name: Option<String>,
-    pub title: String,
-    pub content: String,
-    pub excerpt: Option<String>,
-    pub status: MStatus,
-    pub tags: Option<Vec<String>>,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
-}
-
 impl PostCategory {
     pub async fn query_posts_list(
         limit: u32,
@@ -277,7 +264,22 @@ impl PostCategory {
         .await?;
         Ok(list)
     }
+}
 
+#[derive(FromRow, Debug)]
+pub struct PDetail {
+    pub id: u32,
+    pub category_name: Option<String>,
+    pub title: String,
+    pub content: String,
+    pub excerpt: Option<String>,
+    pub status: MStatus,
+    pub tags: Option<Vec<String>>,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+}
+
+impl PDetail {
     pub async fn query_posts_by_id(id: u32) -> Result<Option<PDetail>, sqlx::Error> {
         #[derive(FromRow, Debug, Clone)]
         struct Post {

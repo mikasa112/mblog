@@ -21,13 +21,15 @@ pub async fn list_posts(req: &mut Request) -> ApiResult<ListResponse<Posts>> {
 
 #[handler]
 pub async fn one_post(req: &mut Request) -> ApiResult<ObjResponse<PostDetail>> {
-    let id = req
-        .params()
-        .get("id")
-        .unwrap_or(&String::from("1"))
-        .parse::<u32>()
-        .unwrap_or(1);
-    one_of_id(id).await
+    if let Some(id_str) = req.params().get("id") {
+        if let Ok(id) = id_str.parse::<u32>() {
+            one_of_id(id).await
+        } else {
+            Err(Code::SimpleParamsError)
+        }
+    } else {
+        Err(Code::SimpleParamsError)
+    }
 }
 
 #[handler]
