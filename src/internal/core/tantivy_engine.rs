@@ -1,10 +1,13 @@
+use std::path::Path;
 use crate::internal::core::my_error::SearchEngineError;
-use std::sync::LazyLock;
+use std::sync::{Arc, LazyLock, Mutex};
 use tantivy::collector::TopDocs;
 use tantivy::query::QueryParser;
-use tantivy::schema::{IndexRecordOption, Schema, TextFieldIndexing, TextOptions, INDEXED, STORED};
+use tantivy::schema::{Field, IndexRecordOption, Schema, TextFieldIndexing, TextOptions, INDEXED, STORED};
 use tantivy::tokenizer::{LowerCaser, RemoveLongFilter, Stemmer, TextAnalyzer};
-use tantivy::{Document, Index, ReloadPolicy, TantivyDocument};
+use tantivy::{doc, Document, Index, IndexReader, IndexWriter, ReloadPolicy, TantivyDocument};
+use tantivy::directory::MmapDirectory;
+use crate::internal::core::config::BLOG_CONFIG;
 
 //延迟初始化
 pub static SEARCH_ENGINE: LazyLock<Result<SearchEngine, SearchEngineError>> =
@@ -13,6 +16,16 @@ pub static SEARCH_ENGINE: LazyLock<Result<SearchEngine, SearchEngineError>> =
 ///搜索引擎
 pub struct SearchEngine {
     pub index: Index,
+    pub reader: IndexReader,
+    pub writer: Mutex<IndexWriter>,
+    my_doc: MyDocument,
+}
+
+struct MyDocument {
+    id: Field,
+    title: Field,
+    content: Field,
+    excerpt: Field,
 }
 
 impl SearchEngine {
@@ -43,7 +56,28 @@ impl SearchEngine {
             .build();
         //注册分词器
         index.tokenizers().register("jieba", analyzer);
-        Ok(SearchEngine { index })
+        let writer = index.writer(50_000_000)?;
+        //索引读取器
+        let reader = index
+            .reader_builder()
+            //每次提交后延迟
+            .reload_policy(ReloadPolicy::OnCommitWithDelay)
+            .try_into()?;
+        let id = index.schema().get_field("id")?;
+        let title = index.schema().get_field("title")?;
+        let content = index.schema().get_field("content")?;
+        let excerpt = index.schema().get_field("excerpt")?;
+        Ok(SearchEngine {
+            index,
+            reader,
+            writer: Mutex::new(writer),
+            my_doc: MyDocument {
+                id,
+                title,
+                content,
+                excerpt,
+            },
+        })
     }
 
     pub fn search(
@@ -52,14 +86,7 @@ impl SearchEngine {
         limit: usize,
         offset: usize,
     ) -> Result<Vec<String>, SearchEngineError> {
-        //索引读取器
-        let reader = self
-            .index
-            .reader_builder()
-            //每次提交后延迟
-            .reload_policy(ReloadPolicy::OnCommitWithDelay)
-            .try_into()?;
-        let searcher = reader.searcher();
+        let searcher = self.reader.searcher();
         let title = self.index.schema().get_field("title")?;
         let content = self.index.schema().get_field("content")?;
         let excerpt = self.index.schema().get_field("excerpt")?;
@@ -72,5 +99,32 @@ impl SearchEngine {
             list.push(retrieved_doc.to_json(&self.index.schema()))
         }
         Ok(list)
+    }
+
+    pub async fn insert(&self, id: u64, title: &str, content: &str, excerpt: &str) -> Result<(), SearchEngineError> {
+        // self.writer.add_document(doc!(
+        //      self.my_doc.id=>id,
+        //      self.my_doc.title=>title,
+        //      self.my_doc.content=>content,
+        //      self.my_doc.excerpt=>excerpt
+        // ))?;
+        self.writer.lock().unwrap().add_document(doc!(
+              self.my_doc.id=>id,
+             self.my_doc.title=>title,
+             self.my_doc.content=>content,
+             self.my_doc.excerpt=>excerpt
+        ))?;
+        // self.writer.borrow_mut().add_document(doc!(
+        //      self.my_doc.id=>id,
+        //      self.my_doc.title=>title,
+        //      self.my_doc.content=>content,
+        //      self.my_doc.excerpt=>excerpt
+        // ))?;
+        Ok(())
+    }
+
+
+    pub async fn insert_batch(&mut self) -> Result<(), SearchEngineError> {
+        todo!("批量插入")
     }
 }
