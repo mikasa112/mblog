@@ -5,7 +5,11 @@ use crate::internal::utils::date_utils;
 use serde::{Deserialize, Serialize};
 
 use crate::app::api::id_validator;
+use crate::internal::core::my_error::SearchEngineError;
+use crate::internal::core::tantivy_engine::SearchEngine;
+use crate::internal::result::code::Code;
 use validator::Validate;
+use crate::app::model::posts::PostCategory;
 
 #[derive(Debug, Serialize)]
 pub struct Posts {
@@ -103,11 +107,16 @@ pub async fn create_post(params: PostParams) -> ApiResult<ObjResponse<()>> {
         params.excerpt,
     )
     .await?;
-    Ok(ObjResponse {
-        err_msg: None,
-        status: 0,
-        data: None,
-    })
+    if let Ok(engine) = &*crate::internal::core::tantivy_engine::SEARCH_ENGINE {
+        engine.insert_batch(vec![]);
+        Ok(ObjResponse{
+            err_msg: None,
+            status: 0,
+            data: None,
+        })
+    } else {
+        Err(Code::New(10008,"".to_string()))
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Validate)]

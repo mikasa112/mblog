@@ -1,6 +1,5 @@
 use crate::internal::core::my_error::MyJobError;
 use crate::internal::core::tantivy_engine::SEARCH_ENGINE;
-use tantivy::doc;
 use tokio_cron_scheduler::{Job, JobScheduler};
 
 pub struct MyJob {
@@ -30,25 +29,10 @@ impl AsyncDatabaseJob {
     pub fn async_search_engine() {
         tokio::spawn(async move {
             if let Ok(engine) = &*SEARCH_ENGINE {
-                // let mut writer = engine.index.writer(50_000_000).unwrap();
-                // let id = engine.index.schema().get_field("id").unwrap();
-                // let title = engine.index.schema().get_field("title").unwrap();
-                // let content = engine.index.schema().get_field("content").unwrap();
-                // let excerpt = engine.index.schema().get_field("excerpt").unwrap();
                 let list = crate::app::model::posts::PostCategory::query_posts_list(50, 0)
                     .await
                     .unwrap();
-                for i in list.into_iter() {
-                    // writer
-                    //     .add_document(doc!(
-                    //         id=>i.id as u64,
-                    //         title=>i.title,
-                    //         content=>i.content,
-                    //         excerpt=>i.excerpt.unwrap_or("".to_string())
-                    //     ))
-                    //     .unwrap();
-                }
-                // writer.commit().unwrap();
+                engine.insert_batch(list).unwrap();
             }
         });
     }

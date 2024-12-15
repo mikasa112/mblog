@@ -1,3 +1,4 @@
+use std::ops::Deref;
 use tantivy::directory::error::OpenDirectoryError;
 use tantivy::query::QueryParserError;
 use tantivy::TantivyError;
@@ -29,4 +30,6 @@ pub enum SearchEngineError {
         #[from]
         source: QueryParserError,
     },
+    #[error("锁获取失败")]
+    TryLockError,
 }

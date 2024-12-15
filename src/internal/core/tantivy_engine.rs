@@ -1,13 +1,13 @@
-use std::path::Path;
+use crate::app::model::posts::PostCategory;
 use crate::internal::core::my_error::SearchEngineError;
-use std::sync::{Arc, LazyLock, Mutex};
+use std::sync::{LazyLock, Mutex};
 use tantivy::collector::TopDocs;
 use tantivy::query::QueryParser;
-use tantivy::schema::{Field, IndexRecordOption, Schema, TextFieldIndexing, TextOptions, INDEXED, STORED};
+use tantivy::schema::{
+    Field, IndexRecordOption, Schema, TextFieldIndexing, TextOptions, INDEXED, STORED,
+};
 use tantivy::tokenizer::{LowerCaser, RemoveLongFilter, Stemmer, TextAnalyzer};
 use tantivy::{doc, Document, Index, IndexReader, IndexWriter, ReloadPolicy, TantivyDocument};
-use tantivy::directory::MmapDirectory;
-use crate::internal::core::config::BLOG_CONFIG;
 
 //延迟初始化
 pub static SEARCH_ENGINE: LazyLock<Result<SearchEngine, SearchEngineError>> =
@@ -101,30 +101,21 @@ impl SearchEngine {
         Ok(list)
     }
 
-    pub async fn insert(&self, id: u64, title: &str, content: &str, excerpt: &str) -> Result<(), SearchEngineError> {
-        // self.writer.add_document(doc!(
-        //      self.my_doc.id=>id,
-        //      self.my_doc.title=>title,
-        //      self.my_doc.content=>content,
-        //      self.my_doc.excerpt=>excerpt
-        // ))?;
-        self.writer.lock().unwrap().add_document(doc!(
-              self.my_doc.id=>id,
-             self.my_doc.title=>title,
-             self.my_doc.content=>content,
-             self.my_doc.excerpt=>excerpt
-        ))?;
-        // self.writer.borrow_mut().add_document(doc!(
-        //      self.my_doc.id=>id,
-        //      self.my_doc.title=>title,
-        //      self.my_doc.content=>content,
-        //      self.my_doc.excerpt=>excerpt
-        // ))?;
-        Ok(())
-    }
-
-
-    pub async fn insert_batch(&mut self) -> Result<(), SearchEngineError> {
-        todo!("批量插入")
+    ///批量插入
+    pub fn insert_batch(&self, posts: Vec<PostCategory>) -> Result<(), SearchEngineError> {
+        if let Ok(mut writer) = self.writer.try_lock() {
+            for post in posts.into_iter() {
+                writer.add_document(doc!(
+                      self.my_doc.id=>post.id as u64,
+                     self.my_doc.title=>post.title,
+                     self.my_doc.content=>post.content,
+                     self.my_doc.excerpt=>post.excerpt.unwrap_or_default()
+                ))?;
+            }
+            writer.commit()?;
+            Ok(())
+        } else {
+            Err(SearchEngineError::TryLockError)
+        }
     }
 }
