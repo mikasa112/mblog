@@ -122,7 +122,7 @@ pub async fn create_post(params: PostParams) -> ApiResult<ObjResponse<()>> {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Validate)]
+#[derive(Debug, Serialize, Deserialize, Validate, Clone)]
 pub struct UpdatePostParams {
     #[validate(custom(function = "id_validator"))]
     pub id: u32,
@@ -133,19 +133,28 @@ pub struct UpdatePostParams {
 }
 
 pub async fn update_post(params: UpdatePostParams) -> ApiResult<ObjResponse<()>> {
+    let params_clone = params.clone();
     model::posts::Post::update_post(
-        params.id,
-        params.category_id,
-        params.title,
-        params.content,
-        params.excerpt,
+        params_clone.id,
+        params_clone.category_id,
+        params_clone.title,
+        params_clone.content,
+        params_clone.excerpt,
     )
         .await?;
-    Ok(ObjResponse {
-        err_msg: None,
-        status: 0,
-        data: None,
-    })
+    if let Some(engine) = crate::internal::core::tantivy_engine::SEARCH_ENGINE.get() {
+        tokio::spawn(async move {
+            let p = model::posts::Post::query_posts_by_id(params.id).await?;
+            let _ = engine.update(p.id as u64, p.title, p.content, p.excerpt)?;
+            Ok(ObjResponse {
+                err_msg: None,
+                status: 0,
+                data: None,
+            })
+        }).await.unwrap()
+    } else {
+        Err(Code::New(99996, "搜索引擎内部错误".to_string()))
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Validate)]
