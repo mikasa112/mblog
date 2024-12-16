@@ -1,3 +1,5 @@
+use salvo::cors::{Cors, CorsHandler};
+use salvo::hyper::Method;
 use salvo::Router;
 use validator::ValidationError;
 
@@ -12,6 +14,7 @@ use crate::internal::middleware::auth::auth_handler;
 use crate::internal::middleware::catch_panic::CatchPanic;
 use crate::internal::middleware::log::LogMiddleware;
 use posts_api::{list_posts, one_post};
+use crate::internal::core::config::BLOG_CONFIG;
 
 fn open_router() -> Router {
     Router::new()
@@ -54,10 +57,18 @@ fn auth_router() -> Router {
         .push(Router::with_path("tags/<id>").delete(tag_api::delete_tag))
 }
 
+fn cors_handler() -> CorsHandler {
+    Cors::new()
+        .allow_origin(BLOG_CONFIG.application.allow_origin.as_str())
+        .allow_methods(vec![Method::GET, Method::POST, Method::DELETE, Method::PUT])
+        .into_handler()
+}
+
 pub fn root_router() -> Router {
     Router::new()
         .hoop(CatchPanic::new())
         .hoop(LogMiddleware::new())
+        .hoop(cors_handler())
         .path("v1")
         .push(open_router())
         .push(auth_router())
