@@ -1,4 +1,3 @@
-use std::ops::Deref;
 use tantivy::directory::error::OpenDirectoryError;
 use tantivy::query::QueryParserError;
 use tantivy::TantivyError;

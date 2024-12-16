@@ -17,20 +17,19 @@ pub async fn search_quick_content(
     size: usize,
     query: String,
 ) -> ApiResult<ObjResponse<Vec<String>>> {
-    match &*SEARCH_ENGINE {
-        Ok(engine) => tokio::task::spawn_blocking(move || {
+    if let Some(engine) = SEARCH_ENGINE.get() {
+        tokio::task::spawn_blocking(move || {
             let vec = engine.search(query.as_str(), size, (page - 1) * size)?;
             return Ok(ObjResponse {
                 err_msg: None,
                 status: 0,
                 data: Some(vec),
             });
-        })
-        .await
-        .unwrap(),
-        Err(err) => Err(Code::New(
+        }).await.unwrap()
+    } else {
+        Err(Code::New(
             10004,
-            format!("初始化搜索引擎错误：{}", err.to_string()),
-        )),
+            "初始化搜索引擎错误".to_string(),
+        ))
     }
 }

@@ -1,6 +1,5 @@
-use crate::app::model::posts::PostCategory;
 use crate::internal::core::my_error::SearchEngineError;
-use std::sync::{LazyLock, Mutex};
+use std::sync::{Mutex, OnceLock};
 use tantivy::collector::TopDocs;
 use tantivy::query::QueryParser;
 use tantivy::schema::{
@@ -9,9 +8,8 @@ use tantivy::schema::{
 use tantivy::tokenizer::{LowerCaser, RemoveLongFilter, Stemmer, TextAnalyzer};
 use tantivy::{doc, Document, Index, IndexReader, IndexWriter, ReloadPolicy, TantivyDocument};
 
-//延迟初始化
-pub static SEARCH_ENGINE: LazyLock<Result<SearchEngine, SearchEngineError>> =
-    LazyLock::new(|| SearchEngine::new());
+//初始化
+pub static SEARCH_ENGINE: OnceLock<SearchEngine> = OnceLock::new();
 
 ///搜索引擎
 pub struct SearchEngine {
@@ -26,6 +24,13 @@ struct MyDocument {
     title: Field,
     content: Field,
     excerpt: Field,
+}
+
+pub struct PostDocument {
+    pub id: u64,
+    pub title: String,
+    pub content: String,
+    pub excerpt: String,
 }
 
 impl SearchEngine {
@@ -102,14 +107,14 @@ impl SearchEngine {
     }
 
     ///批量插入
-    pub fn insert_batch(&self, posts: Vec<PostCategory>) -> Result<(), SearchEngineError> {
+    pub fn insert_batch(&self, posts: Vec<PostDocument>) -> Result<(), SearchEngineError> {
         if let Ok(mut writer) = self.writer.try_lock() {
             for post in posts.into_iter() {
                 writer.add_document(doc!(
-                      self.my_doc.id=>post.id as u64,
+                      self.my_doc.id=>post.id,
                      self.my_doc.title=>post.title,
                      self.my_doc.content=>post.content,
-                     self.my_doc.excerpt=>post.excerpt.unwrap_or_default()
+                     self.my_doc.excerpt=>post.excerpt
                 ))?;
             }
             writer.commit()?;

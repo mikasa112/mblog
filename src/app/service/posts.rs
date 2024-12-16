@@ -5,11 +5,9 @@ use crate::internal::utils::date_utils;
 use serde::{Deserialize, Serialize};
 
 use crate::app::api::id_validator;
-use crate::internal::core::my_error::SearchEngineError;
-use crate::internal::core::tantivy_engine::SearchEngine;
+use crate::internal::core::tantivy_engine::PostDocument;
 use crate::internal::result::code::Code;
 use validator::Validate;
-use crate::app::model::posts::PostCategory;
 
 #[derive(Debug, Serialize)]
 pub struct Posts {
@@ -100,22 +98,27 @@ pub struct PostParams {
 }
 
 pub async fn create_post(params: PostParams) -> ApiResult<ObjResponse<()>> {
-    model::posts::Post::insert_post(
-        params.category_id,
-        params.title,
-        params.content,
-        params.excerpt,
+    let id = model::posts::Post::insert_post(
+        params.category_id.clone(),
+        params.title.clone(),
+        params.content.clone(),
+        params.excerpt.clone(),
     )
-    .await?;
-    if let Ok(engine) = &*crate::internal::core::tantivy_engine::SEARCH_ENGINE {
-        engine.insert_batch(vec![]);
-        Ok(ObjResponse{
+        .await?;
+    if let Some(engine) = crate::internal::core::tantivy_engine::SEARCH_ENGINE.get() {
+        engine.insert_batch(vec![PostDocument {
+            id,
+            title: params.title,
+            content: params.content,
+            excerpt: params.excerpt.unwrap_or_default()
+        }])?;
+        Ok(ObjResponse {
             err_msg: None,
             status: 0,
             data: None,
         })
     } else {
-        Err(Code::New(10008,"".to_string()))
+        Err(Code::New(99996, "搜索引擎内部错误".to_string()))
     }
 }
 
@@ -137,7 +140,7 @@ pub async fn update_post(params: UpdatePostParams) -> ApiResult<ObjResponse<()>>
         params.content,
         params.excerpt,
     )
-    .await?;
+        .await?;
     Ok(ObjResponse {
         err_msg: None,
         status: 0,

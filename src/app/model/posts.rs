@@ -61,8 +61,8 @@ impl Post {
             limit,
             offset
         )
-        .fetch_all(db_pool())
-        .await?;
+            .fetch_all(db_pool())
+            .await?;
         Ok(result)
     }
 
@@ -85,8 +85,8 @@ impl Post {
         "#,
             id
         )
-        .fetch_one(db_pool())
-        .await?;
+            .fetch_one(db_pool())
+            .await?;
         Ok(result)
     }
 
@@ -97,8 +97,8 @@ impl Post {
         SELECT  COUNT(*) AS total FROM  t_posts tp;
         "#
         )
-        .fetch_one(db_pool())
-        .await?;
+            .fetch_one(db_pool())
+            .await?;
         Ok(result.total)
     }
 
@@ -108,8 +108,8 @@ impl Post {
         title: String,
         content: String,
         excerpt: Option<String>,
-    ) -> Result<(), sqlx::Error> {
-        sqlx::query!(
+    ) -> Result<u64, sqlx::Error> {
+        let result = sqlx::query!(
             r#"
         INSERT INTO d_blog.t_posts
         (category_id, title, content, excerpt)
@@ -120,9 +120,9 @@ impl Post {
             content,
             excerpt
         )
-        .execute(db_pool())
-        .await?;
-        Ok(())
+            .execute(db_pool())
+            .await?;
+        Ok(result.last_insert_id())
     }
 
     /// 更新文章的分类标签
@@ -139,8 +139,8 @@ impl Post {
             category_id,
             id
         )
-        .execute(db_pool())
-        .await?;
+            .execute(db_pool())
+            .await?;
         Ok(())
     }
 
@@ -205,8 +205,8 @@ impl Post {
             post_id,
             tag_id
         )
-        .execute(db_pool())
-        .await?;
+            .execute(db_pool())
+            .await?;
         Ok(())
     }
 
@@ -219,8 +219,8 @@ impl Post {
             post_id,
             tag_id
         )
-        .execute(db_pool())
-        .await?;
+            .execute(db_pool())
+            .await?;
         Ok(())
     }
 }
@@ -260,8 +260,8 @@ impl PostCategory {
             limit,
             offset
         )
-        .fetch_all(db_pool())
-        .await?;
+            .fetch_all(db_pool())
+            .await?;
         Ok(list)
     }
 }
@@ -366,13 +366,13 @@ mod posts_test {
     async fn test_insert_one() {
         Post::insert_post(
             Some(1),
-            "我是一条测试标题".to_string(),
-            "测试内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容..."
+            "小袁".to_string(),
+            "小袁小袁"
                 .to_string(),
-            Some(String::from("我是一条摘要")),
+            Some(String::from("我是小袁")),
         )
-        .await
-        .unwrap();
+            .await
+            .unwrap();
     }
 
     #[tokio::test]
