@@ -24,3 +24,6 @@ Cargo.lock
 
 # tantivy 引擎 index目录
 .index/
+
+# 日志
+logs/

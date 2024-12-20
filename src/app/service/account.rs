@@ -9,14 +9,18 @@ use serde::{Deserialize, Serialize};
 use validator::Validate;
 
 #[derive(Debug, Serialize, Deserialize, Validate)]
-pub struct Account {
+pub struct AccountParams {
     #[validate(length(min = 1, message = "UserName不能为空"))]
     pub username: String,
     #[validate(length(min = 1, message = "Password不能为空"))]
     pub password: String,
 }
 
-pub async fn login(params: Account) -> ApiResult<ObjResponse<String>> {
+pub struct UserInfo {
+    pub username: String,
+}
+
+pub async fn login(params: AccountParams) -> ApiResult<ObjResponse<String>> {
     let e = Code::New(99999, "用户名或者密码错误".to_string());
     //查询用户
     let user = crate::app::model::user::User::query_user(params.username)
@@ -43,9 +47,9 @@ pub async fn login(params: Account) -> ApiResult<ObjResponse<String>> {
                         .as_bytes(),
                 ),
             )
-            .map_err(|_e| {
-                return Code::New(99997, String::from("TOKEN生成失败"));
-            })?;
+                .map_err(|_e| {
+                    return Code::New(99997, String::from("TOKEN生成失败"));
+                })?;
             Ok(ObjResponse {
                 err_msg: None,
                 status: 0,
@@ -55,3 +59,12 @@ pub async fn login(params: Account) -> ApiResult<ObjResponse<String>> {
         Err(_) => Err(e),
     }
 }
+
+
+// pub async fn user_info()->ApiResult<ObjResponse<UserInfo>>{
+//     Ok(ObjResponse{
+//         err_msg: None,
+//         status: 0,
+//         data: None,
+//     })
+// }
