@@ -1,8 +1,8 @@
 use mblog::app::api::root_router;
 use mblog::internal::core::config::BLOG_CONFIG;
 use mblog::internal::core::jobs::AsyncDatabaseJob;
-use salvo::prelude::*;
 use mblog::internal::utils::log_utils::Logger;
+use salvo::prelude::*;
 
 #[tokio::main]
 async fn main() {
@@ -12,8 +12,8 @@ async fn main() {
         "{}:{}",
         BLOG_CONFIG.application.host, BLOG_CONFIG.application.port
     ))
-        .bind()
-        .await;
+    .bind()
+    .await;
     let server = Server::new(acceptor);
     server.serve(root_router()).await;
 }

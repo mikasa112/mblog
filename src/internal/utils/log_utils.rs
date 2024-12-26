@@ -1,16 +1,15 @@
 use tracing::metadata::LevelFilter;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_log::LogTracer;
-use tracing_subscriber::{fmt, Layer};
 use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::{fmt, Layer};
 
 pub struct Logger {
     _guard: WorkerGuard,
 }
 impl Logger {
     pub fn init() -> Logger {
-        LogTracer::builder()
-            .init().unwrap();
+        LogTracer::builder().init().unwrap();
         let fmt_layer = fmt::layer()
             .with_level(true)
             .with_writer(std::io::stdout)
@@ -25,8 +24,6 @@ impl Logger {
             .with(file_layer)
             .with(fmt_layer);
         tracing::subscriber::set_global_default(collector).unwrap();
-        Logger {
-            _guard: guard,
-        }
+        Logger { _guard: guard }
     }
 }

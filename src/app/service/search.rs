@@ -25,11 +25,10 @@ pub async fn search_quick_content(
                 status: 0,
                 data: Some(vec),
             });
-        }).await.unwrap()
+        })
+        .await
+        .unwrap()
     } else {
-        Err(Code::New(
-            10004,
-            "初始化搜索引擎错误".to_string(),
-        ))
+        Err(Code::New(10004, "初始化搜索引擎错误".to_string()))
     }
 }

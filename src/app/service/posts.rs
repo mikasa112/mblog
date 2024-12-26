@@ -104,13 +104,13 @@ pub async fn create_post(params: PostParams) -> ApiResult<ObjResponse<()>> {
         params.content.clone(),
         params.excerpt.clone(),
     )
-        .await?;
+    .await?;
     if let Some(engine) = crate::internal::core::tantivy_engine::SEARCH_ENGINE.get() {
         engine.insert_batch(vec![PostDocument {
             id,
             title: params.title,
             content: params.content,
-            excerpt: params.excerpt.unwrap_or_default()
+            excerpt: params.excerpt.unwrap_or_default(),
         }])?;
         Ok(ObjResponse {
             err_msg: None,
@@ -141,7 +141,7 @@ pub async fn update_post(params: UpdatePostParams) -> ApiResult<ObjResponse<()>>
         params_clone.content,
         params_clone.excerpt,
     )
-        .await?;
+    .await?;
     if let Some(engine) = crate::internal::core::tantivy_engine::SEARCH_ENGINE.get() {
         tokio::spawn(async move {
             let p = model::posts::Post::query_posts_by_id(params.id).await?;
@@ -151,7 +151,9 @@ pub async fn update_post(params: UpdatePostParams) -> ApiResult<ObjResponse<()>>
                 status: 0,
                 data: None,
             })
-        }).await.unwrap()
+        })
+        .await
+        .unwrap()
     } else {
         Err(Code::New(99996, "搜索引擎内部错误".to_string()))
     }

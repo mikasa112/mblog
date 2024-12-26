@@ -9,11 +9,13 @@ pub mod posts_api;
 pub mod search_api;
 pub mod tag_api;
 
-use crate::app::api::posts_api::{create_post, create_post_tags, delete_post_tag, update_post, list_posts, one_post};
+use crate::app::api::posts_api::{
+    create_post, create_post_tags, delete_post_tag, list_posts, one_post, update_post,
+};
+use crate::internal::core::config::BLOG_CONFIG;
 use crate::internal::middleware::auth::auth_handler;
 use crate::internal::middleware::catch_panic::CatchPanic;
 use crate::internal::middleware::log::LogMiddleware;
-use crate::internal::core::config::BLOG_CONFIG;
 
 fn open_router() -> Router {
     Router::new()

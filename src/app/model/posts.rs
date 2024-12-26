@@ -61,8 +61,8 @@ impl Post {
             limit,
             offset
         )
-            .fetch_all(db_pool())
-            .await?;
+        .fetch_all(db_pool())
+        .await?;
         Ok(result)
     }
 
@@ -85,8 +85,8 @@ impl Post {
         "#,
             id
         )
-            .fetch_one(db_pool())
-            .await?;
+        .fetch_one(db_pool())
+        .await?;
         Ok(result)
     }
 
@@ -97,8 +97,8 @@ impl Post {
         SELECT  COUNT(*) AS total FROM  t_posts tp;
         "#
         )
-            .fetch_one(db_pool())
-            .await?;
+        .fetch_one(db_pool())
+        .await?;
         Ok(result.total)
     }
 
@@ -120,8 +120,8 @@ impl Post {
             content,
             excerpt
         )
-            .execute(db_pool())
-            .await?;
+        .execute(db_pool())
+        .await?;
         Ok(result.last_insert_id())
     }
 
@@ -139,8 +139,8 @@ impl Post {
             category_id,
             id
         )
-            .execute(db_pool())
-            .await?;
+        .execute(db_pool())
+        .await?;
         Ok(())
     }
 
@@ -205,8 +205,8 @@ impl Post {
             post_id,
             tag_id
         )
-            .execute(db_pool())
-            .await?;
+        .execute(db_pool())
+        .await?;
         Ok(())
     }
 
@@ -219,8 +219,8 @@ impl Post {
             post_id,
             tag_id
         )
-            .execute(db_pool())
-            .await?;
+        .execute(db_pool())
+        .await?;
         Ok(())
     }
 }
@@ -260,8 +260,8 @@ impl PostCategory {
             limit,
             offset
         )
-            .fetch_all(db_pool())
-            .await?;
+        .fetch_all(db_pool())
+        .await?;
         Ok(list)
     }
 }
@@ -367,12 +367,11 @@ mod posts_test {
         Post::insert_post(
             Some(1),
             "小袁".to_string(),
-            "小袁小袁"
-                .to_string(),
+            "小袁小袁".to_string(),
             Some(String::from("我是小袁")),
         )
-            .await
-            .unwrap();
+        .await
+        .unwrap();
     }
 
     #[tokio::test]

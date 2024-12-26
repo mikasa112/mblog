@@ -6,7 +6,9 @@ use tantivy::schema::{
     Field, IndexRecordOption, Schema, TextFieldIndexing, TextOptions, INDEXED, STORED,
 };
 use tantivy::tokenizer::{LowerCaser, RemoveLongFilter, Stemmer, TextAnalyzer};
-use tantivy::{doc, Document, Index, IndexReader, IndexWriter, ReloadPolicy, TantivyDocument, Term};
+use tantivy::{
+    doc, Document, Index, IndexReader, IndexWriter, ReloadPolicy, TantivyDocument, Term,
+};
 
 //初始化
 pub static SEARCH_ENGINE: OnceLock<SearchEngine> = OnceLock::new();
@@ -125,15 +127,21 @@ impl SearchEngine {
     }
 
     ///更新 = 删除 + 插入
-    pub fn update(&self, id: u64, title: String, content: String, excerpt: Option<String>) -> Result<(), SearchEngineError> {
+    pub fn update(
+        &self,
+        id: u64,
+        title: String,
+        content: String,
+        excerpt: Option<String>,
+    ) -> Result<(), SearchEngineError> {
         if let Ok(mut writer) = self.writer.try_lock() {
             writer.delete_term(Term::from_field_u64(self.my_doc.id, id));
             writer.add_document(doc!(
-                      self.my_doc.id=>id,
-                     self.my_doc.title=>title,
-                     self.my_doc.content=>content,
-                     self.my_doc.excerpt=>excerpt.unwrap_or_default()
-                ))?;
+                  self.my_doc.id=>id,
+                 self.my_doc.title=>title,
+                 self.my_doc.content=>content,
+                 self.my_doc.excerpt=>excerpt.unwrap_or_default()
+            ))?;
             writer.commit()?;
             Ok(())
         } else {

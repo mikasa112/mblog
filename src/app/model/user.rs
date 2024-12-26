@@ -19,8 +19,8 @@ impl User {
         "#,
             username
         )
-            .fetch_one(db_pool())
-            .await?;
+        .fetch_one(db_pool())
+        .await?;
         Ok(user)
     }
 }
@@ -37,8 +37,11 @@ impl UserInfo {
             Self,
             r#"
             SELECT nick_name, info FROM d_blog.t_user WHERE username = ?;
-            "#
-        ,username).fetch_one(db_pool()).await?;
+            "#,
+            username
+        )
+        .fetch_one(db_pool())
+        .await?;
         Ok(user)
     }
 }

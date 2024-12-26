@@ -1,3 +1,4 @@
+use crate::app::model::user;
 use crate::internal::middleware::auth::JwtClaims;
 use crate::internal::result::code::Code;
 use crate::internal::result::response::ObjResponse;
@@ -7,7 +8,6 @@ use jsonwebtoken::{EncodingKey, Header};
 use salvo::http::cookie::time::{Duration, OffsetDateTime};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
-use crate::app::model::user;
 
 #[derive(Debug, Serialize, Deserialize, Validate)]
 pub struct AccountParams {
@@ -52,9 +52,9 @@ pub async fn login(params: AccountParams) -> ApiResult<ObjResponse<String>> {
                         .as_bytes(),
                 ),
             )
-                .map_err(|_e| {
-                    return Code::New(99997, String::from("TOKEN生成失败"));
-                })?;
+            .map_err(|_e| {
+                return Code::New(99997, String::from("TOKEN生成失败"));
+            })?;
             Ok(ObjResponse {
                 err_msg: None,
                 status: 0,
@@ -65,17 +65,14 @@ pub async fn login(params: AccountParams) -> ApiResult<ObjResponse<String>> {
     }
 }
 
-
 pub async fn user_info() -> ApiResult<ObjResponse<UserInfo>> {
     let user = user::UserInfo::query_user("mikasa").await?;
     Ok(ObjResponse {
         err_msg: None,
         status: 0,
-        data: Some(
-            UserInfo {
-                nick_name: user.nick_name,
-                info: user.info,
-            }
-        ),
+        data: Some(UserInfo {
+            nick_name: user.nick_name,
+            info: user.info,
+        }),
     })
 }
