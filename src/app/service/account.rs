@@ -7,6 +7,7 @@ use jsonwebtoken::{EncodingKey, Header};
 use salvo::http::cookie::time::{Duration, OffsetDateTime};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
+use crate::app::model::user;
 
 #[derive(Debug, Serialize, Deserialize, Validate)]
 pub struct AccountParams {
@@ -16,14 +17,18 @@ pub struct AccountParams {
     pub password: String,
 }
 
+#[derive(Debug, Serialize)]
 pub struct UserInfo {
-    pub username: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub nick_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub info: Option<String>,
 }
 
 pub async fn login(params: AccountParams) -> ApiResult<ObjResponse<String>> {
     let e = Code::New(99999, "用户名或者密码错误".to_string());
     //查询用户
-    let user = crate::app::model::user::User::query_user(params.username)
+    let user = user::User::query_user(params.username)
         .await
         .map_err(|_| Code::New(99999, "用户名或者密码错误".to_string()))?;
     let hash_pwd = PasswordHash::new(user.passw.as_str())
@@ -61,10 +66,16 @@ pub async fn login(params: AccountParams) -> ApiResult<ObjResponse<String>> {
 }
 
 
-// pub async fn user_info()->ApiResult<ObjResponse<UserInfo>>{
-//     Ok(ObjResponse{
-//         err_msg: None,
-//         status: 0,
-//         data: None,
-//     })
-// }
+pub async fn user_info() -> ApiResult<ObjResponse<UserInfo>> {
+    let user = user::UserInfo::query_user("mikasa").await?;
+    Ok(ObjResponse {
+        err_msg: None,
+        status: 0,
+        data: Some(
+            UserInfo {
+                nick_name: user.nick_name,
+                info: user.info,
+            }
+        ),
+    })
+}

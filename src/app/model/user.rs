@@ -19,8 +19,26 @@ impl User {
         "#,
             username
         )
-        .fetch_one(db_pool())
-        .await?;
+            .fetch_one(db_pool())
+            .await?;
+        Ok(user)
+    }
+}
+
+#[derive(sqlx::FromRow, Debug)]
+pub struct UserInfo {
+    pub nick_name: Option<String>,
+    pub info: Option<String>,
+}
+
+impl UserInfo {
+    pub async fn query_user(username: &str) -> Result<Self, sqlx::Error> {
+        let user = sqlx::query_as!(
+            Self,
+            r#"
+            SELECT nick_name, info FROM d_blog.t_user WHERE username = ?;
+            "#
+        ,username).fetch_one(db_pool()).await?;
         Ok(user)
     }
 }
