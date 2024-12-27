@@ -27,3 +27,6 @@ Cargo.lock
 
 # 日志
 logs/
+
+#图片
+static/

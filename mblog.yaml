@@ -4,6 +4,7 @@ application:
   secret_key: 'asdkf44as223'
   search_engine_dir: 'D:/code/mblog/.index'
   allow_origin: 'http://localhost:5173'
+  resource: 'D:/code/mblog/static/'
 
 database:
   url: "mysql://mikasa:Mikasa520.@122.51.163.61/d_blog"

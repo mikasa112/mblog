@@ -1,5 +1,6 @@
 use salvo::cors::{Cors, CorsHandler};
 use salvo::hyper::Method;
+use salvo::prelude::StaticDir;
 use salvo::Router;
 use validator::ValidationError;
 
@@ -69,12 +70,19 @@ fn cors_handler() -> CorsHandler {
 
 pub fn root_router() -> Router {
     Router::new()
-        .hoop(CatchPanic::new())
-        .hoop(LogMiddleware::new())
-        .hoop(cors_handler())
-        .path("v1")
-        .push(open_router())
-        .push(auth_router())
+        .push(
+            Router::new()
+                .hoop(CatchPanic::new())
+                .hoop(LogMiddleware::new())
+                .hoop(cors_handler())
+                .path("v1")
+                .push(open_router())
+                .push(auth_router()),
+        )
+        .push(
+            Router::with_path("<**path>")
+                .get(StaticDir::new([BLOG_CONFIG.application.resource.as_str()]).auto_list(true)),
+        )
 }
 
 pub fn id_validator(value: u32) -> Result<(), ValidationError> {
