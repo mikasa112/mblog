@@ -24,6 +24,7 @@ pub struct CategorySimpler {
 }
 
 pub async fn list() -> ApiResult<ListResponse<CategorySimpler>> {
+    let count = model::category::CategorySimpler::count().await?;
     let list = model::category::CategorySimpler::list()
         .await?
         .into_iter()
@@ -38,7 +39,7 @@ pub async fn list() -> ApiResult<ListResponse<CategorySimpler>> {
         err_msg: None,
         status: 0,
         data: Some(list),
-        total: None,
+        total: Some(count),
     })
 }
 

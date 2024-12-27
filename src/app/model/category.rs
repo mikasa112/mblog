@@ -27,8 +27,8 @@ impl Category {
         FROM  t_categories tc;
         "#
         )
-        .fetch_all(db_pool())
-        .await?;
+            .fetch_all(db_pool())
+            .await?;
         Ok(categories)
     }
 
@@ -43,8 +43,8 @@ impl Category {
             name,
             description
         )
-        .execute(db_pool())
-        .await?;
+            .execute(db_pool())
+            .await?;
         Ok(())
     }
 }
@@ -81,9 +81,18 @@ impl CategorySimpler {
              tc.updated_at DESC;
         "#
         )
-        .fetch_all(db_pool())
-        .await?;
+            .fetch_all(db_pool())
+            .await?;
         Ok(list)
+    }
+
+    pub async fn count() -> Result<usize, sqlx::Error> {
+        let result = sqlx::query!(
+            r#"SELECT  COUNT(*) AS total FROM  d_blog.t_categories tc;"#
+        )
+            .fetch_one(db_pool())
+            .await?;
+        Ok(result.total as usize)
     }
 }
 
@@ -94,8 +103,8 @@ mod test {
             String::from("算法"),
             Some(String::from("算法学习")),
         )
-        .await
-        .unwrap();
+            .await
+            .unwrap();
     }
 
     #[tokio::test]
