@@ -1,7 +1,7 @@
 use salvo::cors::{Cors, CorsHandler};
 use salvo::hyper::Method;
 use salvo::prelude::StaticDir;
-use salvo::Router;
+use salvo::{Router, Service};
 use validator::ValidationError;
 
 pub mod account_api;
@@ -18,6 +18,7 @@ use crate::internal::middleware::auth::auth_handler;
 use crate::internal::middleware::catch_panic::CatchPanic;
 use crate::internal::middleware::log::LogMiddleware;
 
+/// 开放的api
 fn open_router() -> Router {
     Router::new()
         //登录
@@ -38,6 +39,7 @@ fn open_router() -> Router {
         .push(Router::with_path("search").get(search_api::search))
 }
 
+/// 需要验证的api
 fn auth_router() -> Router {
     Router::new()
         .hoop(auth_handler())
@@ -61,20 +63,26 @@ fn auth_router() -> Router {
         .push(Router::with_path("tags/<id>").delete(tag_api::delete_tag))
 }
 
+/// 跨域中间件
 fn cors_handler() -> CorsHandler {
     Cors::new()
         .allow_origin(BLOG_CONFIG.application.allow_origin.as_str())
         .allow_methods(vec![Method::GET, Method::POST, Method::DELETE, Method::PUT])
+        .allow_headers(vec![
+            "Content-Type", // 必须添加 Content-Type
+            "Accept",       // 必须添加 Accept
+            "Authorization", // 如果使用 Authorization 头
+                            // "X-Requested-With",  // 如果需要允许 AJAX 请求头
+        ])
         .into_handler()
 }
 
-pub fn root_router() -> Router {
+fn root_router() -> Router {
     Router::new()
         .push(
             Router::new()
                 .hoop(CatchPanic::new())
                 .hoop(LogMiddleware::new())
-                .hoop(cors_handler())
                 .path("v1")
                 .push(open_router())
                 .push(auth_router()),
@@ -83,6 +91,10 @@ pub fn root_router() -> Router {
             Router::with_path("<**path>")
                 .get(StaticDir::new([BLOG_CONFIG.application.resource.as_str()]).auto_list(true)),
         )
+}
+
+pub fn my_service() -> Service {
+    Service::new(root_router()).hoop(cors_handler())
 }
 
 pub fn id_validator(value: u32) -> Result<(), ValidationError> {

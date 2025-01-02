@@ -1,4 +1,4 @@
-use mblog::app::api::root_router;
+use mblog::app::api::my_service;
 use mblog::internal::core::config::BLOG_CONFIG;
 use mblog::internal::core::jobs::AsyncDatabaseJob;
 use mblog::internal::utils::log_utils::Logger;
@@ -14,6 +14,5 @@ async fn main() {
     ))
     .bind()
     .await;
-    let server = Server::new(acceptor);
-    server.serve(root_router()).await;
+    Server::new(acceptor).serve(my_service()).await;
 }
