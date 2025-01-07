@@ -1,4 +1,4 @@
-use crate::app::model::posts::PostCategory;
+use crate::app::model::posts::{PostCategory, Status};
 use crate::internal::core::my_error::MyJobError;
 use crate::internal::core::tantivy_engine::{PostDocument, SearchEngine, SEARCH_ENGINE};
 use tokio_cron_scheduler::{Job, JobScheduler};
@@ -39,7 +39,7 @@ impl AsyncDatabaseJob {
                 let mut _total = 0u32;
                 while _total < count as u32 {
                     tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
-                    match PostCategory::query_posts_list(size, page * size).await {
+                    match PostCategory::query_all_posts(size, page * size).await {
                         Ok(list) => {
                             match engine.insert_batch(
                                 list.into_iter()

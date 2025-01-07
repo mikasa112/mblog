@@ -1,4 +1,5 @@
 use crate::internal::core::database::db_pool;
+use serde::{Deserialize, Serialize};
 use sqlx::types::chrono::NaiveDateTime;
 use sqlx::{FromRow, MySql, QueryBuilder, Type};
 
@@ -14,7 +15,7 @@ pub struct Post {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Type, Debug, Copy, Clone)]
+#[derive(Type, Debug, Copy, Clone, Serialize, Deserialize)]
 #[sqlx(type_name = "status")] // 数据库中自定义类型的名称
 #[sqlx(rename_all = "lowercase")] // 指定如何将枚举值映射到数据库
 pub enum Status {
@@ -24,7 +25,7 @@ pub enum Status {
 
 // 避免孤儿规则
 #[allow(dead_code)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct MStatus(Option<Status>);
 impl From<Option<String>> for MStatus {
     fn from(value: Option<String>) -> Self {
@@ -102,6 +103,19 @@ impl Post {
         Ok(result.total)
     }
 
+    /// 查询已推送的文章总数
+    pub async fn query_publish_posts_count() -> Result<i64, sqlx::Error> {
+        let result = sqlx::query!(
+            r#"
+        SELECT  COUNT(*) AS total FROM  t_posts tp
+        WHERE tp.status = 'published';
+        "#
+        )
+        .fetch_one(db_pool())
+        .await?;
+        Ok(result.total)
+    }
+
     /// 插入文章
     pub async fn insert_post(
         category_id: Option<u32>,
@@ -151,6 +165,7 @@ impl Post {
         title: Option<String>,
         content: Option<String>,
         excerpt: Option<String>,
+        status: MStatus,
     ) -> Result<(), sqlx::Error> {
         let mut builder: QueryBuilder<MySql> = QueryBuilder::new("UPDATE d_blog.t_posts tt SET ");
         let mut has_update = false;
@@ -183,6 +198,14 @@ impl Post {
                 builder.push(", ");
             }
             builder.push("tt.excerpt = ");
+            builder.push_bind(it);
+            has_update = true;
+        }
+        if let Some(it) = status.0 {
+            if has_update {
+                builder.push(", ");
+            }
+            builder.push("tt.status = ");
             builder.push_bind(it);
             has_update = true;
         }
@@ -239,6 +262,36 @@ pub struct PostCategory {
 
 impl PostCategory {
     pub async fn query_posts_list(
+        status: Status,
+        limit: u32,
+        offset: u32,
+    ) -> Result<Vec<PostCategory>, sqlx::Error> {
+        let list = sqlx::query_as!(
+            PostCategory,
+            r#"
+            SELECT
+            tp.id,
+            tc.name AS category_name,
+            tp.title,
+            tp.content,
+            tp.excerpt,
+            tp.status,
+            tp.created_at,
+            tp.updated_at
+            FROM t_posts tp LEFT JOIN t_categories tc ON tp.category_id = tc.id
+            WHERE tp.status = ?
+            ORDER BY tp.updated_at DESC LIMIT ? OFFSET ?;
+        "#,
+            status,
+            limit,
+            offset
+        )
+        .fetch_all(db_pool())
+        .await?;
+        Ok(list)
+    }
+
+    pub async fn query_all_posts(
         limit: u32,
         offset: u32,
     ) -> Result<Vec<PostCategory>, sqlx::Error> {
@@ -381,15 +434,24 @@ mod posts_test {
 
     #[tokio::test]
     async fn test_post_category_list() {
-        let posts = PostCategory::query_posts_list(10, 0).await.unwrap();
+        let posts = PostCategory::query_posts_list(Status::Published, 10, 0)
+            .await
+            .unwrap();
         println!("{:?}", posts);
         assert!(posts.len() <= 10);
     }
 
     #[tokio::test]
     async fn test_update_post() {
-        Post::update_post(1, Some(1), Some("标题2标题2".to_string()), None, None)
-            .await
-            .unwrap();
+        Post::update_post(
+            25,
+            Some(1),
+            None,
+            None,
+            None,
+            MStatus(Some(Status::Published)),
+        )
+        .await
+        .unwrap();
     }
 }

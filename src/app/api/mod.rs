@@ -11,7 +11,7 @@ pub mod search_api;
 pub mod tag_api;
 
 use crate::app::api::posts_api::{
-    create_post, create_post_tags, delete_post_tag, list_posts, one_post, update_post,
+    create_post, create_post_tags, delete_post_tag, list_posts_pub, one_post, update_post,
 };
 use crate::internal::core::config::BLOG_CONFIG;
 use crate::internal::middleware::auth::auth_handler;
@@ -26,7 +26,7 @@ fn open_router() -> Router {
         //用户信息
         .push(Router::with_path("userinfo").get(account_api::info))
         //文章列表
-        .push(Router::with_path("posts").get(list_posts))
+        .push(Router::with_path("posts").get(list_posts_pub))
         //单个文章
         .push(Router::with_path("posts/<id>").get(one_post))
         //分类列表
@@ -43,6 +43,8 @@ fn open_router() -> Router {
 fn auth_router() -> Router {
     Router::new()
         .hoop(auth_handler())
+        //已授权的文章列表
+        .push(Router::with_path("posts_auth").get(posts_api::list_posts_auth))
         //创建文章、更新文章
         .push(
             Router::with_path("posts")

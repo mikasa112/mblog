@@ -5,6 +5,7 @@ use crate::internal::utils::date_utils;
 use serde::{Deserialize, Serialize};
 
 use crate::app::api::id_validator;
+use crate::app::model::posts::{MStatus, Status};
 use crate::internal::core::tantivy_engine::PostDocument;
 use crate::internal::result::code::Code;
 use validator::Validate;
@@ -36,10 +37,31 @@ impl From<model::posts::PostCategory> for Posts {
     }
 }
 
-pub async fn list(page: u32, size: u32) -> ApiResult<ListResponse<Posts>> {
-    let list = model::posts::PostCategory::query_posts_list(size, (page - 1) * size).await?;
-    let total = model::posts::Post::query_posts_count().await?;
-    let list = list.into_iter().map(|it| it.into()).collect::<Vec<Posts>>();
+pub enum SearchStatus {
+    All,
+    Published,
+}
+
+pub async fn list(status: SearchStatus, page: u32, size: u32) -> ApiResult<ListResponse<Posts>> {
+    let (total, list) = match status {
+        SearchStatus::All => {
+            let list = model::posts::PostCategory::query_all_posts(size, (page - 1) * size).await?;
+            let total = model::posts::Post::query_posts_count().await?;
+            let list = list.into_iter().map(|it| it.into()).collect::<Vec<Posts>>();
+            (total, list)
+        }
+        SearchStatus::Published => {
+            let list = model::posts::PostCategory::query_posts_list(
+                Status::Published,
+                size,
+                (page - 1) * size,
+            )
+            .await?;
+            let total = model::posts::Post::query_publish_posts_count().await?;
+            let list = list.into_iter().map(|it| it.into()).collect::<Vec<Posts>>();
+            (total, list)
+        }
+    };
     Ok(ListResponse {
         err_msg: None,
         status: 0,
@@ -130,6 +152,7 @@ pub struct UpdatePostParams {
     pub category_id: Option<u32>,
     pub content: Option<String>,
     pub excerpt: Option<String>,
+    pub status: MStatus,
 }
 
 pub async fn update_post(params: UpdatePostParams) -> ApiResult<ObjResponse<()>> {
@@ -140,6 +163,7 @@ pub async fn update_post(params: UpdatePostParams) -> ApiResult<ObjResponse<()>>
         params_clone.title,
         params_clone.content,
         params_clone.excerpt,
+        params_clone.status,
     )
     .await?;
     if let Some(engine) = crate::internal::core::tantivy_engine::SEARCH_ENGINE.get() {

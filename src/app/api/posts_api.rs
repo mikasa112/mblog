@@ -1,6 +1,6 @@
 use crate::app;
 use crate::app::service::posts::{
-    list, one_of_id, PostDetail, PostParams, PostTagsParams, Posts, UpdatePostParams,
+    list, one_of_id, PostDetail, PostParams, PostTagsParams, Posts, SearchStatus, UpdatePostParams,
 };
 use crate::internal::result::code::Code;
 use crate::internal::result::response::{ListResponse, ObjResponse};
@@ -9,13 +9,24 @@ use salvo::{handler, Request};
 use validator::Validate;
 
 #[handler]
-pub async fn list_posts(req: &mut Request) -> ApiResult<ListResponse<Posts>> {
+pub async fn list_posts_pub(req: &mut Request) -> ApiResult<ListResponse<Posts>> {
     let page = req.query::<u32>("page").unwrap_or(1);
     let size = req.query::<u32>("size").unwrap_or(10);
     if page <= 0 || size <= 0 {
         Err(Code::New(10001, "page或者size需要大于0".to_string()))
     } else {
-        list(page, size).await
+        list(SearchStatus::Published, page, size).await
+    }
+}
+
+#[handler]
+pub async fn list_posts_auth(req: &mut Request) -> ApiResult<ListResponse<Posts>> {
+    let page = req.query::<u32>("page").unwrap_or(1);
+    let size = req.query::<u32>("size").unwrap_or(10);
+    if page <= 0 || size <= 0 {
+        Err(Code::New(10001, "page或者size需要大于0".to_string()))
+    } else {
+        list(SearchStatus::All, page, size).await
     }
 }
 
