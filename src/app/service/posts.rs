@@ -117,9 +117,11 @@ pub struct PostParams {
     #[validate(length(min = 1, message = "content不能为空"))]
     pub content: String,
     pub excerpt: Option<String>,
+    pub tag_id: Vec<u32>,
 }
 
 pub async fn create_post(params: PostParams) -> ApiResult<ObjResponse<()>> {
+    //插入文章
     let id = model::posts::Post::insert_post(
         params.category_id.clone(),
         params.title.clone(),
@@ -127,6 +129,8 @@ pub async fn create_post(params: PostParams) -> ApiResult<ObjResponse<()>> {
         params.excerpt.clone(),
     )
     .await?;
+    //绑定标签
+    model::posts::Post::insert_post_tag(&(id as u32), &params.tag_id).await?;
     if let Some(engine) = crate::internal::core::tantivy_engine::SEARCH_ENGINE.get() {
         engine.insert_batch(vec![PostDocument {
             id,
@@ -187,13 +191,12 @@ pub async fn update_post(params: UpdatePostParams) -> ApiResult<ObjResponse<()>>
 pub struct PostTagsParams {
     #[validate(custom(function = "id_validator"))]
     pub post_id: u32,
-    #[validate(custom(function = "id_validator"))]
-    pub tag_id: u32,
+    pub tag_id: Vec<u32>,
 }
 
 /// 对文章绑定标签
 pub async fn create_post_tag(params: PostTagsParams) -> ApiResult<ObjResponse<()>> {
-    model::posts::Post::insert_post_tag(params.post_id, params.tag_id).await?;
+    model::posts::Post::insert_post_tag(&params.post_id, &params.tag_id).await?;
     Ok(ObjResponse {
         err_msg: None,
         status: 0,
@@ -201,8 +204,16 @@ pub async fn create_post_tag(params: PostTagsParams) -> ApiResult<ObjResponse<()
     })
 }
 
+#[derive(Debug, Serialize, Deserialize, Validate)]
+pub struct DeletePostTagParams {
+    #[validate(custom(function = "id_validator"))]
+    pub post_id: u32,
+    #[validate(custom(function = "id_validator"))]
+    pub tag_id: u32,
+}
+
 /// 删除{post_id}文章的{tag_id}标签
-pub async fn delete_post_tag(params: PostTagsParams) -> ApiResult<ObjResponse<()>> {
+pub async fn delete_post_tag(params: DeletePostTagParams) -> ApiResult<ObjResponse<()>> {
     model::posts::Post::delete_post_tag(params.post_id, params.tag_id).await?;
     Ok(ObjResponse {
         err_msg: None,

@@ -1,6 +1,7 @@
 use crate::app;
 use crate::app::service::posts::{
-    list, one_of_id, PostDetail, PostParams, PostTagsParams, Posts, SearchStatus, UpdatePostParams,
+    list, one_of_id, DeletePostTagParams, PostDetail, PostParams, PostTagsParams, Posts,
+    SearchStatus, UpdatePostParams,
 };
 use crate::internal::result::code::Code;
 use crate::internal::result::response::{ListResponse, ObjResponse};
@@ -66,7 +67,7 @@ pub async fn create_post_tags(req: &mut Request) -> ApiResult<ObjResponse<()>> {
 
 #[handler]
 pub async fn delete_post_tag(req: &mut Request) -> ApiResult<ObjResponse<()>> {
-    let params = req.parse_json::<PostTagsParams>().await?;
+    let params = req.parse_json::<DeletePostTagParams>().await?;
     params.validate()?;
     app::service::posts::delete_post_tag(params).await
 }

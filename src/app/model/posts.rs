@@ -220,16 +220,17 @@ impl Post {
     }
 
     /// 对文章绑定标签
-    pub async fn insert_post_tag(post_id: u32, tag_id: u32) -> Result<(), sqlx::Error> {
-        sqlx::query!(
-            r#"
-          INSERT INTO d_blog.t_post_tags (post_id, tag_id) VALUES(?, ?);
-          "#,
-            post_id,
-            tag_id
-        )
-        .execute(db_pool())
-        .await?;
+    pub async fn insert_post_tag(post_id: &u32, tag_ids: &Vec<u32>) -> Result<(), sqlx::Error> {
+        let pool = db_pool();
+        let tx = pool.begin().await?;
+        for tag_id in tag_ids {
+            sqlx::query("INSERT INTO d_blog.t_post_tags (post_id, tag_id) VALUES(?, ?)")
+                .bind(post_id)
+                .bind(tag_id)
+                .execute(pool)
+                .await?;
+        }
+        tx.commit().await?;
         Ok(())
     }
 
