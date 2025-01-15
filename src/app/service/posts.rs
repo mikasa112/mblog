@@ -123,10 +123,10 @@ pub struct PostParams {
 pub async fn create_post(params: PostParams) -> ApiResult<ObjResponse<()>> {
     //插入文章
     let id = model::posts::Post::insert_post(
-        params.category_id.clone(),
-        params.title.clone(),
-        params.content.clone(),
-        params.excerpt.clone(),
+        params.category_id,
+        &params.title,
+        &params.content,
+        &params.excerpt,
     )
     .await?;
     //绑定标签
@@ -148,7 +148,7 @@ pub async fn create_post(params: PostParams) -> ApiResult<ObjResponse<()>> {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Validate, Clone)]
+#[derive(Debug, Serialize, Deserialize, Validate)]
 pub struct UpdatePostParams {
     #[validate(custom(function = "id_validator"))]
     pub id: u32,
@@ -160,14 +160,13 @@ pub struct UpdatePostParams {
 }
 
 pub async fn update_post(params: UpdatePostParams) -> ApiResult<ObjResponse<()>> {
-    let params_clone = params.clone();
     model::posts::Post::update_post(
-        params_clone.id,
-        params_clone.category_id,
-        params_clone.title,
-        params_clone.content,
-        params_clone.excerpt,
-        params_clone.status,
+        params.id,
+        params.category_id,
+        &params.title,
+        &params.content,
+        &params.excerpt,
+        params.status,
     )
     .await?;
     if let Some(engine) = crate::internal::core::tantivy_engine::SEARCH_ENGINE.get() {

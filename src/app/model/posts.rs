@@ -119,9 +119,9 @@ impl Post {
     /// 插入文章
     pub async fn insert_post(
         category_id: Option<u32>,
-        title: String,
-        content: String,
-        excerpt: Option<String>,
+        title: &str,
+        content: &str,
+        excerpt: &Option<String>,
     ) -> Result<u64, sqlx::Error> {
         let result = sqlx::query!(
             r#"
@@ -162,9 +162,9 @@ impl Post {
     pub async fn update_post(
         id: u32,
         category_id: Option<u32>,
-        title: Option<String>,
-        content: Option<String>,
-        excerpt: Option<String>,
+        title: &Option<String>,
+        content: &Option<String>,
+        excerpt: &Option<String>,
         status: MStatus,
     ) -> Result<(), sqlx::Error> {
         let mut builder: QueryBuilder<MySql> = QueryBuilder::new("UPDATE d_blog.t_posts tt SET ");
@@ -418,14 +418,9 @@ mod posts_test {
 
     #[tokio::test]
     async fn test_insert_one() {
-        Post::insert_post(
-            Some(1),
-            "小袁".to_string(),
-            "小袁小袁".to_string(),
-            Some(String::from("我是小袁")),
-        )
-        .await
-        .unwrap();
+        Post::insert_post(Some(1), "小袁", "小袁小袁", Some("我是小袁"))
+            .await
+            .unwrap();
     }
 
     #[tokio::test]
