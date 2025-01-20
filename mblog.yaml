@@ -5,6 +5,7 @@ application:
   search_engine_dir: 'D:/code/mblog/.index'
   allow_origin: 'http://localhost:5173'
   resource: 'D:/code/mblog/static/'
+  concurrency_limit: 10
 
 database:
   url: "mysql://mikasa:Mikasa520.@122.51.163.61/d_blog"

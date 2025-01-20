@@ -1,6 +1,6 @@
 use salvo::cors::{Cors, CorsHandler};
 use salvo::hyper::Method;
-use salvo::prelude::StaticDir;
+use salvo::prelude::{max_concurrency, StaticDir};
 use salvo::{Router, Service};
 use validator::ValidationError;
 
@@ -74,7 +74,7 @@ fn cors_handler() -> CorsHandler {
             "Content-Type", // 必须添加 Content-Type
             "Accept",       // 必须添加 Accept
             "Authorization", // 如果使用 Authorization 头
-                            // "X-Requested-With",  // 如果需要允许 AJAX 请求头
+            // "X-Requested-With",  // 如果需要允许 AJAX 请求头
         ])
         .into_handler()
 }
@@ -85,6 +85,7 @@ fn root_router() -> Router {
             Router::new()
                 .hoop(CatchPanic::new())
                 .hoop(LogMiddleware::new())
+                .hoop(max_concurrency(BLOG_CONFIG.application.concurrency_limit))
                 .path("v1")
                 .push(open_router())
                 .push(auth_router()),

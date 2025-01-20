@@ -20,5 +20,6 @@ pub struct Application {
     pub secret_key: String,
     pub search_engine_dir: String,
     pub allow_origin: String,
+    pub concurrency_limit: usize,
     pub resource: String,
 }

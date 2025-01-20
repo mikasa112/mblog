@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-salvo = { version = "0.72", features = ["jwt-auth", "anyhow", "catch-panic", "cors","serve-static"] }
+salvo = { version = "0.72", features = ["jwt-auth", "anyhow", "catch-panic", "cors", "serve-static", "concurrency-limiter"] }
 tokio = { version = "1", features = ["macros"] }
 tracing = "0.1"
 tracing-subscriber = { version = "^0.3", features = ["fmt", "std"] }
