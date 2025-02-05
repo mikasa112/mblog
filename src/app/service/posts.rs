@@ -4,10 +4,10 @@ use crate::internal::result::ApiResult;
 use crate::internal::utils::date_utils;
 use serde::{Deserialize, Serialize};
 
-use crate::app::api::id_validator;
 use crate::app::model::posts::{MStatus, Status};
 use crate::internal::core::tantivy_engine::PostDocument;
 use crate::internal::result::code::Code;
+use crate::internal::utils::id_validator;
 use validator::Validate;
 
 #[derive(Debug, Serialize)]

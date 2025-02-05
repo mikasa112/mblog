@@ -2,7 +2,6 @@ use salvo::cors::{Cors, CorsHandler};
 use salvo::hyper::Method;
 use salvo::prelude::{max_concurrency, StaticDir};
 use salvo::{Router, Service};
-use validator::ValidationError;
 
 pub mod account_api;
 pub mod category_api;
@@ -74,7 +73,7 @@ fn cors_handler() -> CorsHandler {
             "Content-Type", // 必须添加 Content-Type
             "Accept",       // 必须添加 Accept
             "Authorization", // 如果使用 Authorization 头
-            // "X-Requested-With",  // 如果需要允许 AJAX 请求头
+                            // "X-Requested-With",  // 如果需要允许 AJAX 请求头
         ])
         .into_handler()
 }
@@ -98,12 +97,4 @@ fn root_router() -> Router {
 
 pub fn my_service() -> Service {
     Service::new(root_router()).hoop(cors_handler())
-}
-
-pub fn id_validator(value: u32) -> Result<(), ValidationError> {
-    if value >= 1 {
-        Ok(())
-    } else {
-        Err(ValidationError::new("id需要大于0"))
-    }
 }
