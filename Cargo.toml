@@ -6,8 +6,6 @@ edition = "2021"
 [dependencies]
 salvo = { version = "0.72", features = ["jwt-auth", "anyhow", "catch-panic", "cors", "serve-static", "concurrency-limiter"] }
 tokio = { version = "1", features = ["macros"] }
-tracing = "0.1"
-tracing-subscriber = { version = "^0.3", features = ["fmt", "std"] }
 sqlx = { version = "0.8", features = ["runtime-tokio", "runtime-tokio-native-tls", "mysql", "chrono"] }
 serde_yml = "0.0.12"
 serde = { version = "1.0.215", features = ["derive"] }
@@ -19,5 +17,7 @@ futures-util = "0.3.31"
 tantivy = "0.22.0"
 tantivy-jieba = "0.11.0"
 tokio-cron-scheduler = "0.13.0"
-tracing-appender = "0.2.3"
-tracing-log = "0.2.0"
+# 手动导入库，来静态编译openssl
+openssl = { version = "0.10.70", features = ["vendored"] }
+tklog = "0.2.9"
+log = "0.4.25"

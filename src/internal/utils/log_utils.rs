@@ -1,29 +1,36 @@
-use tracing::metadata::LevelFilter;
-use tracing_appender::non_blocking::WorkerGuard;
-use tracing_log::LogTracer;
-use tracing_subscriber::layer::SubscriberExt;
-use tracing_subscriber::{fmt, Layer};
+use tklog::{Format, ASYNC_LOG, LEVEL};
 
-pub struct Logger {
-    _guard: WorkerGuard,
-}
+pub struct Logger {}
 impl Logger {
-    pub fn init() -> Logger {
-        LogTracer::builder().init().unwrap();
-        let fmt_layer = fmt::layer()
-            .with_level(true)
-            .with_writer(std::io::stdout)
-            .with_filter(LevelFilter::INFO);
-        let file_appender = tracing_appender::rolling::daily("./logs/", "mblog.log");
-        let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
-        let file_layer = fmt::layer()
-            .with_ansi(false)
-            .with_writer(non_blocking)
-            .with_filter(LevelFilter::INFO);
-        let collector = tracing_subscriber::registry()
-            .with(file_layer)
-            .with(fmt_layer);
-        tracing::subscriber::set_global_default(collector).unwrap();
-        Logger { _guard: guard }
+    pub async fn init() -> Logger {
+        ASYNC_LOG
+            //兼容官方日志
+            .uselog()
+            //控制台打印
+            .set_console(true)
+            //日志级别
+            .set_level(LEVEL::Info)
+            .set_format(
+                Format::LevelFlag
+                    | Format::Date
+                    | Format::Time
+                    | Format::Microseconds
+                    | Format::ShortFileName,
+            )
+            .set_formatter("{time} {level} {file}: {message}\n")
+            .set_cutmode_by_mixed(
+                //文件名
+                "./logs/mblog.log",
+                //滚动字节数，这里是521M
+                1 << 29,
+                //同时按天滚动
+                tklog::MODE::DAY,
+                //最多保存30
+                30,
+                //开启压缩
+                true,
+            )
+            .await;
+        Logger {}
     }
 }

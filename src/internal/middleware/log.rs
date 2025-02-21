@@ -1,7 +1,7 @@
+use log::info;
 use salvo::http::{ResBody, StatusCode};
 use salvo::{async_trait, Depot, FlowCtrl, Request, Response};
 use std::time::Instant;
-use tracing::{Instrument, Level};
 
 pub struct LogMiddleware {}
 
@@ -21,15 +21,9 @@ impl salvo::Handler for LogMiddleware {
         res: &mut Response,
         ctrl: &mut FlowCtrl,
     ) {
-        let span = tracing::span!(
-            Level::INFO,
-            "Request",
-            remote_addr = %req.remote_addr().to_string(),
-            version = ?req.version(),
-            method = %req.method(),
-            path = %req.uri(),
-        );
-
+        let addr = req.remote_addr().to_string();
+        let method = req.method().as_str().to_string();
+        let path = req.uri().path().to_string();
         async move {
             let now = Instant::now();
             ctrl.call_next(req, depot, res).await;
@@ -39,13 +33,8 @@ impl salvo::Handler for LogMiddleware {
                 ResBody::Error(e) => e.code,
                 _ => StatusCode::OK,
             });
-            tracing::info!(
-                %status,
-                ?duration,
-                "Response"
-            );
+            info!("Request({addr} {method} {path} {status:?} {duration:?})");
         }
-        .instrument(span)
         .await
     }
 }

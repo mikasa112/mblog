@@ -6,7 +6,7 @@ use salvo::prelude::*;
 
 #[tokio::main]
 async fn main() {
-    let _logger = Logger::init();
+    let _logger = Logger::init().await;
     AsyncDatabaseJob::async_search_engine();
     let acceptor = TcpListener::new(format!(
         "{}:{}",

@@ -1,9 +1,8 @@
+use log::{error, info};
 use crate::app::model::posts::PostCategory;
 use crate::internal::core::my_error::MyJobError;
 use crate::internal::core::tantivy_engine::{PostDocument, SearchEngine, SEARCH_ENGINE};
 use tokio_cron_scheduler::{Job, JobScheduler};
-use tracing::info;
-use tracing::log::error;
 
 pub struct MyJob {
     _scheduler: JobScheduler,
