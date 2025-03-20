@@ -4,7 +4,7 @@ application:
   secret_key: 'asdkf44as223'
   search_engine_dir: 'D:/code/mblog/.index'
   allow_origin: 'http://localhost:5173'
-  resource: '/home/mikasa/code/mblog/static/'
+  resource: '/root/mblog/static/'
   concurrency_limit: 10
 
 database:
