@@ -418,7 +418,8 @@ mod posts_test {
 
     #[tokio::test]
     async fn test_insert_one() {
-        Post::insert_post(Some(1), "小袁", "小袁小袁", Some("我是小袁"))
+        let excerpt = Some(String::from("我是小袁"));
+        Post::insert_post(Some(1), "小袁", "小袁小袁", &excerpt)
             .await
             .unwrap();
     }
@@ -442,9 +443,9 @@ mod posts_test {
         Post::update_post(
             25,
             Some(1),
-            None,
-            None,
-            None,
+            &None,
+            &None,
+            &None,
             MStatus(Some(Status::Published)),
         )
         .await
