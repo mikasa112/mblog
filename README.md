@@ -1,7 +1,7 @@
 ##### sqlx 使用所需环境
 ```shell
 #安装SQLX的预处理器
-Cargo isntall sqlx-cli
+cargo install sqlx-cli
 #加载`DATABASE_URL`环境变量，或者在项目根目录创建.env进行键入配置
 $env:DATABASE_URL="mysql://username:password@host/database"
 #预处理query!宏，如果在.env中设置了环境变量，那么就不需要手动执行此命令
