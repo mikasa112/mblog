@@ -26,15 +26,31 @@ pub struct UserInfo {
 }
 
 pub async fn login(params: AccountParams) -> ApiResult<ObjResponse<String>> {
-    let e = Code::New(99999, "用户名或者密码错误".to_string());
     //查询用户
     let user = user::User::query_user(params.username)
         .await
         .map_err(|_| Code::New(99999, "用户名或者密码错误".to_string()))?;
-    let hash_pwd = PasswordHash::new(user.passw.as_str())
-        .map_err(|_e| Code::New(99998, "密码HASH失败".to_string()))?;
+    let argon2_result =
+        tokio::task::spawn_blocking(move || match PasswordHash::new(user.passw.as_str()) {
+            Ok(password_hash) => {
+                match argon2::Argon2::default()
+                    .verify_password(params.password.as_bytes(), &password_hash)
+                {
+                    Ok(_) => Ok(()),
+                    Err(_) => Err(Code::New(99999, "用户名或者密码错误".to_string())),
+                }
+            }
+            Err(_) => {
+                return Err(Code::New(99998, "密码HASH失败".to_string()));
+            }
+        })
+        .await
+        .map_err(|e| {
+            log::error!("tokio runtime 错误: {}", e);
+            Code::New(99999, "系统内部错误".to_string())
+        })?;
     //校验密码
-    match argon2::Argon2::default().verify_password(params.password.as_bytes(), &hash_pwd) {
+    match argon2_result {
         Ok(_) => {
             //生成TOKEN, 有效期为1天
             let exp = OffsetDateTime::now_utc() + Duration::days(1);
@@ -61,7 +77,7 @@ pub async fn login(params: AccountParams) -> ApiResult<ObjResponse<String>> {
                 data: Some(token),
             })
         }
-        Err(_) => Err(e),
+        Err(e) => Err(e),
     }
 }
 
