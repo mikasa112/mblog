@@ -5,6 +5,7 @@ use salvo::prelude::Json;
 use salvo::{async_trait, Depot, FlowCtrl, Request, Response};
 use std::panic::AssertUnwindSafe;
 
+#[derive(Default)]
 pub struct CatchPanic;
 
 impl CatchPanic {

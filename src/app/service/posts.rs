@@ -172,7 +172,7 @@ pub async fn update_post(params: UpdatePostParams) -> ApiResult<ObjResponse<()>>
     if let Some(engine) = crate::internal::core::tantivy_engine::SEARCH_ENGINE.get() {
         tokio::spawn(async move {
             let p = model::posts::Post::query_posts_by_id(params.id).await?;
-            let _ = engine.update(p.id as u64, p.title, p.content, p.excerpt)?;
+            engine.update(p.id as u64, p.title, p.content, p.excerpt)?;
             Ok(ObjResponse {
                 err_msg: None,
                 status: 0,

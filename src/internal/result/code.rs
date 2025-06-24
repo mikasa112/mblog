@@ -43,7 +43,7 @@ impl Writer for Code {
                     .field_errors()
                     .into_iter()
                     .flat_map(|(_, errors)| {
-                        errors.into_iter().map(|error| {
+                        errors.iter().map(|error| {
                             format!(
                                 "{}",
                                 error

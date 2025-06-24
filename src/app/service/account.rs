@@ -40,9 +40,7 @@ pub async fn login(params: AccountParams) -> ApiResult<ObjResponse<String>> {
                     Err(_) => Err(Code::New(99999, "用户名或者密码错误".to_string())),
                 }
             }
-            Err(_) => {
-                return Err(Code::New(99998, "密码HASH失败".to_string()));
-            }
+            Err(_) => Err(Code::New(99998, "密码HASH失败".to_string())),
         })
         .await
         .map_err(|e| {
@@ -68,9 +66,7 @@ pub async fn login(params: AccountParams) -> ApiResult<ObjResponse<String>> {
                         .as_bytes(),
                 ),
             )
-            .map_err(|_e| {
-                return Code::New(99997, String::from("TOKEN生成失败"));
-            })?;
+            .map_err(|_e| Code::New(99997, String::from("TOKEN生成失败")))?;
             Ok(ObjResponse {
                 err_msg: None,
                 status: 0,

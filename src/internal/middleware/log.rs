@@ -3,7 +3,8 @@ use salvo::http::{ResBody, StatusCode};
 use salvo::{async_trait, Depot, FlowCtrl, Request, Response};
 use std::time::Instant;
 
-pub struct LogMiddleware {}
+#[derive(Default)]
+pub struct LogMiddleware;
 
 impl LogMiddleware {
     #[inline]

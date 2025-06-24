@@ -13,22 +13,14 @@ use validator::Validate;
 pub async fn list_posts_pub(req: &mut Request) -> ApiResult<ListResponse<Posts>> {
     let page = req.query::<u32>("page").unwrap_or(1);
     let size = req.query::<u32>("size").unwrap_or(10);
-    if page <= 0 || size <= 0 {
-        Err(Code::New(10001, "page或者size需要大于0".to_string()))
-    } else {
-        list(SearchStatus::Published, page, size).await
-    }
+    list(SearchStatus::Published, page, size).await
 }
 
 #[handler]
 pub async fn list_posts_auth(req: &mut Request) -> ApiResult<ListResponse<Posts>> {
     let page = req.query::<u32>("page").unwrap_or(1);
     let size = req.query::<u32>("size").unwrap_or(10);
-    if page <= 0 || size <= 0 {
-        Err(Code::New(10001, "page或者size需要大于0".to_string()))
-    } else {
-        list(SearchStatus::All, page, size).await
-    }
+    list(SearchStatus::All, page, size).await
 }
 
 #[handler]

@@ -20,11 +20,11 @@ pub async fn search_quick_content(
     if let Some(engine) = SEARCH_ENGINE.get() {
         tokio::task::spawn_blocking(move || {
             let vec = engine.search(query.as_str(), size, (page - 1) * size)?;
-            return Ok(ObjResponse {
+            Ok(ObjResponse {
                 err_msg: None,
                 status: 0,
                 data: Some(vec),
-            });
+            })
         })
         .await
         .unwrap()
